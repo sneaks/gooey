@@ -1,11 +1,14 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Canvas } from "../canvas/Canvas";
 import { Sidebar } from "../panels/Sidebar";
 import { Inspector } from "../panels/Inspector";
 import { useGraphStore } from "./store";
 import { runMockExecution } from "./mockRunner";
+import { initWebSocket, sendMessage, isConnected, disconnectWebSocket } from "./wsClient";
 import { RESEARCH_AGENT_TEMPLATE } from "../templates/researchAgent";
+
+const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === "true";
 
 function Toolbar() {
   const executionState = useGraphStore((s) => s.executionState);
@@ -17,18 +20,35 @@ function Toolbar() {
   const loadFromLocalStorage = useGraphStore((s) => s.loadFromLocalStorage);
   const loadGraph = useGraphStore((s) => s.loadGraph);
 
+  const [wsStatus, setWsStatus] = useState<"connected" | "disconnected" | "connecting">("disconnected");
   const mockRunRef = useRef<{ cancel: () => void } | null>(null);
+
+  // Init WebSocket when not in mock mode
+  useEffect(() => {
+    if (MOCK_MODE) return;
+    initWebSocket(handleServerMessage, setWsStatus);
+    return () => disconnectWebSocket();
+  }, [handleServerMessage]);
 
   const handleRun = () => {
     if (executionState === "running") return;
     runGraph();
     const graph = saveGraph();
-    mockRunRef.current = runMockExecution(graph, handleServerMessage);
+
+    if (MOCK_MODE) {
+      mockRunRef.current = runMockExecution(graph, handleServerMessage);
+    } else {
+      sendMessage({ type: "run", graph });
+    }
   };
 
   const handleStop = () => {
-    mockRunRef.current?.cancel();
-    mockRunRef.current = null;
+    if (MOCK_MODE) {
+      mockRunRef.current?.cancel();
+      mockRunRef.current = null;
+    } else {
+      sendMessage({ type: "stop" });
+    }
     stopGraph();
   };
 
@@ -133,7 +153,16 @@ function Toolbar() {
       </button>
 
       {/* Status indicator */}
-      <div style={{ marginLeft: "auto", fontSize: 11, color: "#64748b" }}>
+      <div style={{ marginLeft: "auto", fontSize: 11, color: "#64748b", display: "flex", alignItems: "center", gap: 8 }}>
+        {!MOCK_MODE && (
+          <span style={{
+            color: wsStatus === "connected" ? "#22c55e" : wsStatus === "connecting" ? "#eab308" : "#ef4444",
+            fontSize: 10,
+          }}>
+            ● {wsStatus === "connected" ? "WS" : wsStatus === "connecting" ? "Connecting..." : "Disconnected"}
+          </span>
+        )}
+        {MOCK_MODE && <span style={{ color: "#eab308", fontSize: 10 }}>MOCK</span>}
         {executionState === "running" && (
           <span style={{ color: "#22c55e" }}>⟳ Running...</span>
         )}

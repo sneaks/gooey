@@ -4,20 +4,31 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n vite,server -c cyan,yellow \"vite\" \"tsx watch src/server/index.ts\"",
+    "dev:client": "vite",
+    "dev:server": "tsx watch src/server/index.ts",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@xyflow/react": "^12.6.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "ws": "^8.19.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.0"
   }

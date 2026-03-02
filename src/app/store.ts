@@ -12,6 +12,7 @@ import {
 } from "@xyflow/react";
 import type { NodeStatus, ServerMessage } from "../shared/protocol";
 import type { GraphJSON } from "../shared/graphTypes";
+import { sendMessage as wsSend } from "./wsClient";
 import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
 import { isTypeCompatible } from "../shared/wireTypes";
 
@@ -55,6 +56,10 @@ interface GraphStore {
   loadGraph: (json: GraphJSON) => void;
   saveToLocalStorage: () => void;
   loadFromLocalStorage: () => boolean;
+  saveToServer: (name: string) => Promise<void>;
+  loadFromServer: (name: string) => Promise<boolean>;
+  listServerGraphs: () => Promise<string[]>;
+  exportLocalStorageToFile: () => string | null;
 }
 
 let nodeIdCounter = 1;
@@ -246,7 +251,10 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   },
 
   respondToGate: (commandId, approved) => {
-    // Find the node with this gate request and clear it
+    // Send to server (no-op if not connected / mock mode)
+    wsSend({ type: "gate_response", commandId, approved });
+
+    // Update local state
     const nodeStates = { ...get().nodeStates };
     for (const [nodeId, state] of Object.entries(nodeStates)) {
       if (state.gateRequest?.commandId === commandId) {
@@ -326,5 +334,41 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
     } catch {
       return false;
     }
+  },
+
+  saveToServer: async (name: string) => {
+    const json = get().saveGraph();
+    await fetch(`http://localhost:4242/api/graphs/${encodeURIComponent(name)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(json),
+    });
+  },
+
+  loadFromServer: async (name: string) => {
+    try {
+      const res = await fetch(`http://localhost:4242/api/graphs/${encodeURIComponent(name)}`);
+      if (!res.ok) return false;
+      const json: GraphJSON = await res.json();
+      get().loadGraph(json);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  listServerGraphs: async () => {
+    try {
+      const res = await fetch("http://localhost:4242/api/graphs");
+      const data = await res.json();
+      return data.graphs ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  exportLocalStorageToFile: () => {
+    const raw = localStorage.getItem("gooey-graph");
+    return raw ?? null;
   },
 }));
