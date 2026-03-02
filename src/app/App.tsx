@@ -20,6 +20,7 @@ const TEMPLATES: Record<string, GraphJSON> = {
 };
 import { validateGraph } from "../shared/execution/compiler";
 import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
+import { exportAsPiExtension } from "../shared/exportExtension";
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === "true";
 
@@ -141,6 +142,20 @@ function Toolbar() {
     input.click();
   };
 
+  const handleExportExtension = () => {
+    const name = prompt("Extension name:", "my-gooey-graph");
+    if (!name) return;
+    const graph = saveGraph();
+    const code = exportAsPiExtension(graph, name);
+    const blob = new Blob([code], { type: "text/typescript" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name.replace(/[^a-zA-Z0-9_-]/g, "_")}.ts`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const btnStyle: React.CSSProperties = {
     padding: "5px 14px",
     border: "1px solid #334155",
@@ -239,6 +254,12 @@ function Toolbar() {
         style={{ ...btnStyle, background: "#1e293b", color: "#94a3b8" }}
       >
         ⬆ Import
+      </button>
+      <button
+        onClick={handleExportExtension}
+        style={{ ...btnStyle, background: "#1e293b", color: "#a855f7" }}
+      >
+        🔌 Extension
       </button>
 
       {/* Status indicator */}

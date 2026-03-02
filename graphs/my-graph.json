@@ -9,7 +9,7 @@
         "y": -128
       },
       "data": {
-        "prompt": "Provide a haiku about blueberries. Response should be plain text, the haiku only"
+        "prompt": "Provide a haiku about blueberries. Response should be plain text, the haiku only no banter"
       }
     },
     {
@@ -24,30 +24,6 @@
         "modelId": "claude-sonnet-4-20250514",
         "thinkingLevel": "off",
         "apiKeyEnvVar": "ANTHROPIC_API_KEY"
-      }
-    },
-    {
-      "id": "tool-1",
-      "type": "tool",
-      "position": {
-        "x": 50,
-        "y": 380
-      },
-      "data": {
-        "toolType": "read",
-        "cwd": "."
-      }
-    },
-    {
-      "id": "tool-2",
-      "type": "tool",
-      "position": {
-        "x": 50,
-        "y": 480
-      },
-      "data": {
-        "toolType": "grep",
-        "cwd": "."
       }
     },
     {
@@ -72,19 +48,6 @@
       "data": {
         "format": "plain"
       }
-    },
-    {
-      "id": "subagent-4",
-      "type": "subagent",
-      "position": {
-        "x": 544,
-        "y": 272
-      },
-      "data": {
-        "agentName": "",
-        "mode": "single",
-        "agentScope": "user"
-      }
     }
   ],
   "edges": [
@@ -101,20 +64,6 @@
       "sourceHandle": "prompt",
       "target": "agent-1",
       "targetHandle": "userMessage"
-    },
-    {
-      "id": "e-tool1-agent",
-      "source": "tool-1",
-      "sourceHandle": "tool",
-      "target": "agent-1",
-      "targetHandle": "tools"
-    },
-    {
-      "id": "e-tool2-agent",
-      "source": "tool-2",
-      "sourceHandle": "tool",
-      "target": "agent-1",
-      "targetHandle": "tools"
     },
     {
       "id": "xy-edge__agent-1response-output-3input",

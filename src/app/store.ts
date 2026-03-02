@@ -51,6 +51,12 @@ interface GraphStore {
   stopGraph: () => void;
   respondToGate: (commandId: string, approved: boolean) => void;
 
+  // Undo/redo
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+
   // Persistence
   saveGraph: () => GraphJSON;
   loadGraph: (json: GraphJSON) => void;
@@ -64,12 +70,29 @@ interface GraphStore {
 
 let nodeIdCounter = 1;
 
+interface Snapshot {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+const MAX_HISTORY = 50;
+let undoStack: Snapshot[] = [];
+let redoStack: Snapshot[] = [];
+
+function pushUndo(state: { nodes: Node[]; edges: Edge[] }) {
+  undoStack.push({ nodes: structuredClone(state.nodes), edges: structuredClone(state.edges) });
+  if (undoStack.length > MAX_HISTORY) undoStack.shift();
+  redoStack = [];
+}
+
 export const useGraphStore = create<GraphStore>((set, get) => ({
   nodes: [],
   edges: [],
   selectedNodeId: null,
   executionState: "idle",
   nodeStates: {},
+  canUndo: false,
+  canRedo: false,
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
@@ -102,7 +125,8 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
 
   onConnect: (connection) => {
     if (!get().isValidConnection(connection)) return;
-    set({ edges: addEdge(connection, get().edges) });
+    pushUndo(get());
+    set({ edges: addEdge(connection, get().edges), canUndo: true, canRedo: false });
   },
 
   isValidConnection: (connection) => {
@@ -130,21 +154,17 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
     const def = NODE_DEFS_BY_TYPE[type];
     if (!def) return;
 
-    // Build default config from definition
+    pushUndo(get());
+
     const data: Record<string, any> = {};
     for (const field of def.config) {
       data[field.key] = field.default ?? "";
     }
 
     const id = `${type}-${nodeIdCounter++}`;
-    const newNode: Node = {
-      id,
-      type,
-      position,
-      data,
-    };
+    const newNode: Node = { id, type, position, data };
 
-    set({ nodes: [...get().nodes, newNode] });
+    set({ nodes: [...get().nodes, newNode], canUndo: true, canRedo: false });
   },
 
   updateNodeData: (nodeId, data) => {
@@ -156,6 +176,7 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   },
 
   deleteNode: (nodeId) => {
+    pushUndo(get());
     set({
       nodes: get().nodes.filter((n) => n.id !== nodeId),
       edges: get().edges.filter(
@@ -163,6 +184,8 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
       ),
       selectedNodeId:
         get().selectedNodeId === nodeId ? null : get().selectedNodeId,
+      canUndo: true,
+      canRedo: false,
     });
   },
 
@@ -267,6 +290,32 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
       }
     }
     set({ nodeStates });
+  },
+
+  undo: () => {
+    if (undoStack.length === 0) return;
+    const current: Snapshot = { nodes: structuredClone(get().nodes), edges: structuredClone(get().edges) };
+    redoStack.push(current);
+    const prev = undoStack.pop()!;
+    set({
+      nodes: prev.nodes,
+      edges: prev.edges,
+      canUndo: undoStack.length > 0,
+      canRedo: true,
+    });
+  },
+
+  redo: () => {
+    if (redoStack.length === 0) return;
+    const current: Snapshot = { nodes: structuredClone(get().nodes), edges: structuredClone(get().edges) };
+    undoStack.push(current);
+    const next = redoStack.pop()!;
+    set({
+      nodes: next.nodes,
+      edges: next.edges,
+      canUndo: true,
+      canRedo: redoStack.length > 0,
+    });
   },
 
   saveGraph: () => {

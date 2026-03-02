@@ -531,6 +531,101 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       { key: "botTokenEnvVar", label: "Bot Token Env Var", type: "string", default: "SLACK_BOT_TOKEN" },
     ],
   },
+  // === v0.4 — Advanced ===
+  {
+    type: "handoff",
+    label: "Handoff",
+    category: "core",
+    icon: "🤝",
+    inputs: [
+      { id: "context", label: "Context", type: "messages", required: true },
+      { id: "model", label: "Model", type: "model" },
+    ],
+    outputs: [
+      { id: "result", label: "Result", type: "data" },
+      { id: "messages", label: "Messages", type: "messages" },
+    ],
+    config: [
+      { key: "targetAgent", label: "Target Agent Name", type: "string", default: "" },
+      {
+        key: "summaryMode",
+        label: "Summary Mode",
+        type: "select",
+        default: "auto",
+        options: [
+          { label: "Auto (LLM summarizes)", value: "auto" },
+          { label: "Full Context", value: "full" },
+          { label: "Last N Messages", value: "last-n" },
+        ],
+      },
+      { key: "summaryCount", label: "Last N Messages", type: "number", default: 10, description: "For 'Last N' mode" },
+      { key: "handoffPrompt", label: "Handoff Prompt", type: "textarea", default: "Continue the task with the following context:" },
+    ],
+  },
+  {
+    type: "remote-exec",
+    label: "Remote Exec",
+    category: "integration",
+    icon: "🖥️",
+    inputs: [{ id: "command", label: "Command", type: "data", required: true }],
+    outputs: [
+      { id: "stdout", label: "Stdout", type: "data" },
+      { id: "stderr", label: "Stderr", type: "data" },
+      { id: "exitCode", label: "Exit Code", type: "data" },
+    ],
+    config: [
+      { key: "host", label: "Host", type: "string", default: "" },
+      { key: "port", label: "Port", type: "number", default: 22 },
+      { key: "user", label: "User", type: "string", default: "root" },
+      {
+        key: "authMethod",
+        label: "Auth Method",
+        type: "select",
+        default: "key",
+        options: [
+          { label: "SSH Key", value: "key" },
+          { label: "Password (env var)", value: "password" },
+        ],
+      },
+      { key: "keyPath", label: "SSH Key Path", type: "string", default: "~/.ssh/id_rsa" },
+      { key: "passwordEnvVar", label: "Password Env Var", type: "string", default: "" },
+    ],
+  },
+  {
+    type: "custom",
+    label: "Custom Node",
+    category: "utility",
+    icon: "🧩",
+    inputs: [
+      { id: "input", label: "Input", type: "data" },
+      { id: "config", label: "Config", type: "config" },
+    ],
+    outputs: [{ id: "output", label: "Output", type: "data" }],
+    config: [
+      { key: "customName", label: "Node Name", type: "string", default: "My Node" },
+      { key: "description", label: "Description", type: "string", default: "" },
+      {
+        key: "executeCode",
+        label: "Execute Code",
+        type: "code",
+        default: "// `data` is the input, `config` is the config input\nreturn data;",
+        description: "JavaScript function body. Return the output value.",
+      },
+    ],
+  },
+  {
+    type: "variable",
+    label: "Variable",
+    category: "utility",
+    icon: "📌",
+    inputs: [],
+    outputs: [{ id: "value", label: "Value", type: "data" }],
+    config: [
+      { key: "varName", label: "Variable Name", type: "string", default: "" },
+      { key: "value", label: "Value", type: "string", default: "" },
+      { key: "envVar", label: "From Env Var", type: "string", default: "", description: "If set, value is read from this env var (server-side)" },
+    ],
+  },
 ];
 
 // Index by type for fast lookup

@@ -16,6 +16,10 @@ import { TransformNode } from "./TransformNode";
 import { MergeNode } from "./MergeNode";
 import { SplitNode } from "./SplitNode";
 import { SlackNode } from "./SlackNode";
+import { HandoffNode } from "./HandoffNode";
+import { RemoteExecNode } from "./RemoteExecNode";
+import { CustomNode } from "./CustomNode";
+import { VariableNode } from "./VariableNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -36,4 +40,8 @@ export const nodeTypes = {
   merge: MergeNode,
   split: SplitNode,
   slack: SlackNode,
+  handoff: HandoffNode,
+  "remote-exec": RemoteExecNode,
+  custom: CustomNode,
+  variable: VariableNode,
 };

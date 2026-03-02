@@ -203,6 +203,60 @@ export async function executeNode(
       ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `[Slack ${step.config.action ?? "send"} → ${step.config.channel ?? "#general"}]` });
       return { response: null, trigger: true };
 
+    case "handoff": {
+      // Handoff: summarize context and pass to a new agent session
+      const ctxRef = step.inputs["context"];
+      const ctxUp = ctxRef ? ctx.nodeOutputs.get(ctxRef.sourceNodeId) : null;
+      const messages = ctxUp?.[ctxRef?.sourcePortId ?? ""] ?? [];
+      const summaryMode = step.config.summaryMode ?? "auto";
+      const prompt = step.config.handoffPrompt ?? "Continue with this context:";
+
+      let context: any;
+      if (summaryMode === "last-n") {
+        const n = step.config.summaryCount ?? 10;
+        context = Array.isArray(messages) ? messages.slice(-n) : messages;
+      } else {
+        context = messages;
+      }
+
+      ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `Handing off to ${step.config.targetAgent || "next agent"}...\n${prompt}` });
+      return { result: context, messages: Array.isArray(context) ? context : [] };
+    }
+
+    case "remote-exec": {
+      // Remote Exec: stub — real SSH would use ssh2 library
+      const cmdRef = step.inputs["command"];
+      const cmdUp = cmdRef ? ctx.nodeOutputs.get(cmdRef.sourceNodeId) : null;
+      const command = cmdUp?.[cmdRef?.sourcePortId ?? ""] ?? "";
+      ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `[SSH ${step.config.user ?? "root"}@${step.config.host ?? "?"}] ${command}` });
+      return { stdout: `[stub] Would execute: ${command}`, stderr: "", exitCode: 0 };
+    }
+
+    case "custom": {
+      const cInputRef = step.inputs["input"];
+      const cUpstream = cInputRef ? ctx.nodeOutputs.get(cInputRef.sourceNodeId) : null;
+      const cData = cUpstream?.[cInputRef?.sourcePortId ?? ""] ?? null;
+      const cConfigRef = step.inputs["config"];
+      const cConfigUp = cConfigRef ? ctx.nodeOutputs.get(cConfigRef.sourceNodeId) : null;
+      const cConfig = cConfigUp?.[cConfigRef?.sourcePortId ?? ""] ?? null;
+      const code = step.config.executeCode ?? "return data;";
+      try {
+        const fn = new Function("data", "config", code);
+        const result = fn(cData, cConfig);
+        return { output: result };
+      } catch (err: any) {
+        throw new Error(`Custom node error: ${err.message}`);
+      }
+    }
+
+    case "variable": {
+      let value = step.config.value ?? "";
+      if (step.config.envVar) {
+        value = process.env[step.config.envVar] ?? `[env var ${step.config.envVar} not set]`;
+      }
+      return { value };
+    }
+
     default:
       console.warn(`[gooey-server] Unknown node type: ${step.type}`);
       return null;
