@@ -131,6 +131,77 @@ export async function executeNode(
         },
       };
 
+    case "file-trigger":
+      // File Trigger: in a one-shot run, just emit a trigger signal
+      ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `Watching ${step.config.watchPath ?? "."}` });
+      return { content: null, path: step.config.watchPath ?? ".", trigger: true };
+
+    case "webhook-trigger":
+      // Webhook: stub — would start an HTTP listener in real impl
+      ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `Webhook ready on :${step.config.port ?? 8080}${step.config.path ?? "/webhook"}` });
+      return { body: null, headers: null, trigger: true };
+
+    case "transform": {
+      const tInputRef = step.inputs["input"];
+      const tUpstream = tInputRef ? ctx.nodeOutputs.get(tInputRef.sourceNodeId) : null;
+      const tData = tUpstream?.[tInputRef?.sourcePortId ?? ""] ?? null;
+      const code = step.config.code ?? "return data;";
+      try {
+        const fn = new Function("data", code);
+        const result = fn(tData);
+        return { output: result };
+      } catch (err: any) {
+        throw new Error(`Transform error: ${err.message}`);
+      }
+    }
+
+    case "merge": {
+      const mergeInputs: any[] = [];
+      for (const portId of ["input-1", "input-2", "input-3"]) {
+        const ref = step.inputs[portId];
+        if (ref) {
+          const up = ctx.nodeOutputs.get(ref.sourceNodeId);
+          const val = up?.[ref.sourcePortId];
+          if (val != null) mergeInputs.push(val);
+        }
+      }
+      const mergeStrategy = step.config.strategy ?? "concatenate";
+      if (mergeStrategy === "concatenate") {
+        const sep = (step.config.separator ?? "\\n").replace(/\\n/g, "\n");
+        return { output: mergeInputs.map(String).join(sep) };
+      }
+      if (mergeStrategy === "array") {
+        return { output: mergeInputs };
+      }
+      if (mergeStrategy === "object") {
+        const merged = Object.assign({}, ...mergeInputs.map((i: any) => (typeof i === "object" ? i : { value: i })));
+        return { output: merged };
+      }
+      return { output: mergeInputs };
+    }
+
+    case "split": {
+      const sInputRef = step.inputs["input"];
+      const sUpstream = sInputRef ? ctx.nodeOutputs.get(sInputRef.sourceNodeId) : null;
+      const sData = sUpstream?.[sInputRef?.sourcePortId ?? ""] ?? "";
+      const splitInput = String(sData);
+      let items: string[];
+      const splitMode = step.config.splitMode ?? "lines";
+      if (splitMode === "lines") {
+        items = splitInput.split("\n");
+      } else if (splitMode === "delimiter") {
+        items = splitInput.split(step.config.delimiter ?? ",");
+      } else if (splitMode === "json-array") {
+        try { items = JSON.parse(splitInput); } catch { items = [splitInput]; }
+      } else {
+        items = [splitInput];
+      }
+      return { "item-1": items[0] ?? null, "item-2": items[1] ?? null, "item-3": items[2] ?? null };
+    }
+
+    case "slack":
+      ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `[Slack ${step.config.action ?? "send"} → ${step.config.channel ?? "#general"}]` });
+      return { response: null, trigger: true };
 
     default:
       console.warn(`[gooey-server] Unknown node type: ${step.type}`);

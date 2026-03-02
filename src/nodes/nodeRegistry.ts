@@ -366,6 +366,171 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       },
     ],
   },
+  // === v0.3 — Triggers ===
+  {
+    type: "file-trigger",
+    label: "File Trigger",
+    category: "io",
+    icon: "📁",
+    inputs: [],
+    outputs: [
+      { id: "content", label: "Content", type: "data" },
+      { id: "path", label: "Path", type: "data" },
+      { id: "trigger", label: "Trigger", type: "trigger" },
+    ],
+    config: [
+      { key: "watchPath", label: "Watch Path", type: "string", default: "." },
+      {
+        key: "events",
+        label: "Events",
+        type: "select",
+        default: "change",
+        options: [
+          { label: "Change", value: "change" },
+          { label: "Create", value: "create" },
+          { label: "Delete", value: "delete" },
+          { label: "All", value: "all" },
+        ],
+      },
+      { key: "glob", label: "Glob Pattern", type: "string", default: "", description: "e.g. **/*.ts" },
+      { key: "debounceMs", label: "Debounce (ms)", type: "number", default: 500 },
+    ],
+  },
+  {
+    type: "webhook-trigger",
+    label: "Webhook Trigger",
+    category: "io",
+    icon: "🌐",
+    inputs: [],
+    outputs: [
+      { id: "body", label: "Body", type: "data" },
+      { id: "headers", label: "Headers", type: "data" },
+      { id: "trigger", label: "Trigger", type: "trigger" },
+    ],
+    config: [
+      { key: "port", label: "Port", type: "number", default: 8080 },
+      { key: "path", label: "Path", type: "string", default: "/webhook" },
+      {
+        key: "method",
+        label: "Method",
+        type: "select",
+        default: "POST",
+        options: [
+          { label: "POST", value: "POST" },
+          { label: "GET", value: "GET" },
+          { label: "PUT", value: "PUT" },
+        ],
+      },
+    ],
+  },
+
+  // === v0.3 — Utility ===
+  {
+    type: "transform",
+    label: "Transform",
+    category: "utility",
+    icon: "⚡",
+    inputs: [{ id: "input", label: "Input", type: "data", required: true }],
+    outputs: [{ id: "output", label: "Output", type: "data" }],
+    config: [
+      {
+        key: "language",
+        label: "Language",
+        type: "select",
+        default: "javascript",
+        options: [
+          { label: "JavaScript", value: "javascript" },
+          { label: "JSONPath", value: "jsonpath" },
+        ],
+      },
+      {
+        key: "code",
+        label: "Code",
+        type: "code",
+        default: "// input is available as `data`\nreturn data;",
+        description: "Transform function body. `data` is the input value.",
+      },
+    ],
+  },
+  {
+    type: "merge",
+    label: "Merge",
+    category: "utility",
+    icon: "🔗",
+    inputs: [
+      { id: "input-1", label: "Input 1", type: "data", required: true },
+      { id: "input-2", label: "Input 2", type: "data" },
+      { id: "input-3", label: "Input 3", type: "data" },
+    ],
+    outputs: [{ id: "output", label: "Output", type: "data" }],
+    config: [
+      {
+        key: "strategy",
+        label: "Strategy",
+        type: "select",
+        default: "concatenate",
+        options: [
+          { label: "Concatenate", value: "concatenate" },
+          { label: "Array", value: "array" },
+          { label: "Object Merge", value: "object" },
+        ],
+      },
+      { key: "separator", label: "Separator", type: "string", default: "\\n", description: "For concatenate mode" },
+    ],
+  },
+  {
+    type: "split",
+    label: "Split",
+    category: "utility",
+    icon: "✂️",
+    inputs: [{ id: "input", label: "Input", type: "data", required: true }],
+    outputs: [
+      { id: "item-1", label: "Item 1", type: "data" },
+      { id: "item-2", label: "Item 2", type: "data" },
+      { id: "item-3", label: "Item 3", type: "data" },
+    ],
+    config: [
+      {
+        key: "splitMode",
+        label: "Split Mode",
+        type: "select",
+        default: "lines",
+        options: [
+          { label: "Lines", value: "lines" },
+          { label: "Delimiter", value: "delimiter" },
+          { label: "JSON Array", value: "json-array" },
+        ],
+      },
+      { key: "delimiter", label: "Delimiter", type: "string", default: ",", description: "For delimiter mode" },
+    ],
+  },
+
+  // === v0.3 — Integrations ===
+  {
+    type: "slack",
+    label: "Slack",
+    category: "integration",
+    icon: "💬",
+    inputs: [{ id: "message", label: "Message", type: "message" }],
+    outputs: [
+      { id: "response", label: "Response", type: "data" },
+      { id: "trigger", label: "Trigger", type: "trigger" },
+    ],
+    config: [
+      {
+        key: "action",
+        label: "Action",
+        type: "select",
+        default: "send",
+        options: [
+          { label: "Send Message", value: "send" },
+          { label: "Listen", value: "listen" },
+        ],
+      },
+      { key: "channel", label: "Channel", type: "string", default: "#general" },
+      { key: "botTokenEnvVar", label: "Bot Token Env Var", type: "string", default: "SLACK_BOT_TOKEN" },
+    ],
+  },
 ];
 
 // Index by type for fast lookup

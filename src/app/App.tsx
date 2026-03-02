@@ -7,6 +7,17 @@ import { useGraphStore } from "./store";
 import { runMockExecution } from "./mockRunner";
 import { initWebSocket, sendMessage, isConnected, disconnectWebSocket } from "./wsClient";
 import { RESEARCH_AGENT_TEMPLATE } from "../templates/researchAgent";
+import { CODE_REVIEW_TEMPLATE } from "../templates/codeReview";
+import { GATED_AGENT_TEMPLATE } from "../templates/gatedAgent";
+import { PARALLEL_AGENTS_TEMPLATE } from "../templates/parallelAgents";
+import type { GraphJSON } from "../shared/graphTypes";
+
+const TEMPLATES: Record<string, GraphJSON> = {
+  "Research Agent": RESEARCH_AGENT_TEMPLATE,
+  "Code Review": CODE_REVIEW_TEMPLATE,
+  "Gated Agent": GATED_AGENT_TEMPLATE,
+  "Parallel Agents": PARALLEL_AGENTS_TEMPLATE,
+};
 import { validateGraph } from "../shared/execution/compiler";
 import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
 
@@ -92,7 +103,13 @@ function Toolbar() {
   };
 
   const handleLoadTemplate = () => {
-    loadGraph(RESEARCH_AGENT_TEMPLATE);
+    const names = Object.keys(TEMPLATES);
+    const choice = prompt(`Load template:\n${names.map((n, i) => `${i + 1}. ${n}`).join("\n")}\n\nEnter number:`);
+    if (!choice) return;
+    const idx = parseInt(choice) - 1;
+    if (idx >= 0 && idx < names.length) {
+      loadGraph(TEMPLATES[names[idx]]);
+    }
   };
 
   const handleExport = () => {

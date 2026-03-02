@@ -10,6 +10,12 @@ import { PromptTemplateNode } from "./PromptTemplateNode";
 import { ProtectedPathNode } from "./ProtectedPathNode";
 import { ToolSetNode } from "./ToolSetNode";
 import { MemoryNode } from "./MemoryNode";
+import { FileTriggerNode } from "./FileTriggerNode";
+import { WebhookTriggerNode } from "./WebhookTriggerNode";
+import { TransformNode } from "./TransformNode";
+import { MergeNode } from "./MergeNode";
+import { SplitNode } from "./SplitNode";
+import { SlackNode } from "./SlackNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -24,4 +30,10 @@ export const nodeTypes = {
   "protected-path": ProtectedPathNode,
   "tool-set": ToolSetNode,
   memory: MemoryNode,
+  "file-trigger": FileTriggerNode,
+  "webhook-trigger": WebhookTriggerNode,
+  transform: TransformNode,
+  merge: MergeNode,
+  split: SplitNode,
+  slack: SlackNode,
 };

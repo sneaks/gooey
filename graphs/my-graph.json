@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "prompt-input-1",
+      "type": "prompt-input",
+      "position": {
+        "x": 208,
+        "y": -128
+      },
+      "data": {
+        "prompt": "Provide a haiku about blueberries. Response should be plain text, the haiku only"
+      }
+    },
+    {
+      "id": "llm-provider-1",
+      "type": "llm-provider",
+      "position": {
+        "x": 50,
+        "y": 50
+      },
+      "data": {
+        "provider": "anthropic",
+        "modelId": "claude-sonnet-4-20250514",
+        "thinkingLevel": "off",
+        "apiKeyEnvVar": "ANTHROPIC_API_KEY"
+      }
+    },
+    {
+      "id": "tool-1",
+      "type": "tool",
+      "position": {
+        "x": 50,
+        "y": 380
+      },
+      "data": {
+        "toolType": "read",
+        "cwd": "."
+      }
+    },
+    {
+      "id": "tool-2",
+      "type": "tool",
+      "position": {
+        "x": 50,
+        "y": 480
+      },
+      "data": {
+        "toolType": "grep",
+        "cwd": "."
+      }
+    },
+    {
+      "id": "agent-1",
+      "type": "agent",
+      "position": {
+        "x": 352,
+        "y": 64
+      },
+      "data": {
+        "maxTurns": 10,
+        "compactionEnabled": false
+      }
+    },
+    {
+      "id": "output-3",
+      "type": "output",
+      "position": {
+        "x": 640,
+        "y": -16
+      },
+      "data": {
+        "format": "plain"
+      }
+    },
+    {
+      "id": "subagent-4",
+      "type": "subagent",
+      "position": {
+        "x": 544,
+        "y": 272
+      },
+      "data": {
+        "agentName": "",
+        "mode": "single",
+        "agentScope": "user"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-llm-agent",
+      "source": "llm-provider-1",
+      "sourceHandle": "model",
+      "target": "agent-1",
+      "targetHandle": "model"
+    },
+    {
+      "id": "e-prompt-agent",
+      "source": "prompt-input-1",
+      "sourceHandle": "prompt",
+      "target": "agent-1",
+      "targetHandle": "userMessage"
+    },
+    {
+      "id": "e-tool1-agent",
+      "source": "tool-1",
+      "sourceHandle": "tool",
+      "target": "agent-1",
+      "targetHandle": "tools"
+    },
+    {
+      "id": "e-tool2-agent",
+      "source": "tool-2",
+      "sourceHandle": "tool",
+      "target": "agent-1",
+      "targetHandle": "tools"
+    },
+    {
+      "id": "xy-edge__agent-1response-output-3input",
+      "source": "agent-1",
+      "sourceHandle": "response",
+      "target": "output-3",
+      "targetHandle": "input"
+    }
+  ]
+}
