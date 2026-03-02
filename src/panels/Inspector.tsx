@@ -109,6 +109,7 @@ export function Inspector() {
   const nodes = useGraphStore((s) => s.nodes);
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const deleteNode = useGraphStore((s) => s.deleteNode);
+  const nodeState = useGraphStore((s) => selectedNodeId ? s.nodeStates[selectedNodeId] : undefined);
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const def = selectedNode ? NODE_DEFS_BY_TYPE[selectedNode.type!] : null;
@@ -275,6 +276,78 @@ export function Inspector() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Runtime output (for output/agent/subagent nodes) */}
+      {nodeState?.streamedText && (
+        <div style={{ marginBottom: 16 }}>
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              color: "#64748b",
+              marginBottom: 6,
+            }}
+          >
+            Output ({nodeState.streamedText.length} chars)
+          </div>
+          <div
+            style={{
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: 4,
+              padding: "6px 8px",
+              maxHeight: 300,
+              overflow: "auto",
+              color: "#e2e8f0",
+              fontSize: 11,
+              fontFamily: "monospace",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              lineHeight: 1.4,
+            }}
+          >
+            {nodeState.streamedText}
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(nodeState.streamedText);
+            }}
+            style={{
+              marginTop: 4,
+              padding: "3px 8px",
+              background: "#1e293b",
+              color: "#94a3b8",
+              border: "1px solid #334155",
+              borderRadius: 3,
+              fontSize: 10,
+              cursor: "pointer",
+            }}
+          >
+            📋 Copy
+          </button>
+        </div>
+      )}
+
+      {/* Runtime status */}
+      {nodeState?.status && nodeState.status !== "idle" && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4 }}>
+            Status:{" "}
+            <span style={{
+              color: nodeState.status === "running" ? "#22c55e"
+                : nodeState.status === "done" ? "#3b82f6"
+                : nodeState.status === "error" ? "#ef4444" : "#64748b",
+              fontWeight: 600,
+            }}>
+              {nodeState.status}
+            </span>
+          </div>
+          {nodeState.error && (
+            <div style={{ fontSize: 10, color: "#ef4444" }}>{nodeState.error}</div>
+          )}
         </div>
       )}
 

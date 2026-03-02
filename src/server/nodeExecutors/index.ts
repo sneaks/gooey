@@ -38,14 +38,14 @@ export async function executeNode(
       return { content: step.config.content ?? "" };
 
     case "output": {
-      // Output node: collect streamed text from its input source
+      // Output node: collect streamed text from its input source, passthrough
       const inputRef = step.inputs["input"];
+      let text = "";
       if (inputRef) {
         const upstream = ctx.nodeOutputs.get(inputRef.sourceNodeId);
-        const text = upstream?.[inputRef.sourcePortId] ?? "";
+        text = String(upstream?.[inputRef.sourcePortId] ?? "");
         if (text) {
-          // Stream it token-by-token for the UI
-          const chars = String(text).split("");
+          const chars = text.split("");
           for (const char of chars) {
             if (ctx.isAborted()) break;
             ctx.send({ type: "stream_token", nodeId: step.nodeId, token: char });
@@ -53,7 +53,8 @@ export async function executeNode(
           }
         }
       }
-      return null;
+      // Passthrough for downstream chaining
+      return { passthrough: text };
     }
 
     case "gate": {

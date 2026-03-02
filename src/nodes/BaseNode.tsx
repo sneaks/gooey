@@ -37,7 +37,6 @@ export function BaseNode({ id, type, selected, children }: BaseNodeProps) {
         border: `2px solid ${selected ? "#60a5fa" : "#334155"}`,
         borderRadius: 8,
         minWidth: 180,
-        maxWidth: 260,
         fontSize: 12,
         boxShadow: selected
           ? "0 0 0 2px rgba(96, 165, 250, 0.3)"

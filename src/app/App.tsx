@@ -329,6 +329,12 @@ export function App() {
         }
         .react-flow__node {
           cursor: default !important;
+          background: transparent !important;
+          border: none !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          width: auto !important;
         }
         .react-flow__handle {
           cursor: crosshair !important;

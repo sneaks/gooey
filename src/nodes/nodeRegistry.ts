@@ -70,6 +70,7 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
     ],
     outputs: [
       { id: "response", label: "Response", type: "stream" },
+      { id: "textOutput", label: "Text Output", type: "message" },
       { id: "messages", label: "Messages", type: "messages" },
       { id: "done", label: "Done", type: "trigger" },
     ],
@@ -136,7 +137,9 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
     inputs: [
       { id: "input", label: "Input", type: "stream", required: true },
     ],
-    outputs: [],
+    outputs: [
+      { id: "passthrough", label: "Passthrough", type: "data" },
+    ],
     config: [
       {
         key: "format",

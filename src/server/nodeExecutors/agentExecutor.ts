@@ -182,6 +182,7 @@ export async function executeAgent(
 
   return {
     response: fullResponse,
+    textOutput: fullResponse,
     messages: messages,
     done: true,
   };
