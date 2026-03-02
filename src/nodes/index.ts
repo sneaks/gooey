@@ -7,6 +7,9 @@ import { GateNode } from "./GateNode";
 import { RouterNode } from "./RouterNode";
 import { SubagentNode } from "./SubagentNode";
 import { PromptTemplateNode } from "./PromptTemplateNode";
+import { ProtectedPathNode } from "./ProtectedPathNode";
+import { ToolSetNode } from "./ToolSetNode";
+import { MemoryNode } from "./MemoryNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -18,4 +21,7 @@ export const nodeTypes = {
   router: RouterNode,
   subagent: SubagentNode,
   "prompt-template": PromptTemplateNode,
+  "protected-path": ProtectedPathNode,
+  "tool-set": ToolSetNode,
+  memory: MemoryNode,
 };

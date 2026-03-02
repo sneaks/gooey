@@ -3,6 +3,8 @@ import type { ServerMessage } from "../../shared/protocol";
 import { executeLLMProvider } from "./llmProviderExecutor";
 import { executeTool } from "./toolExecutor";
 import { executeAgent } from "./agentExecutor";
+import { executeSubagent } from "./subagentExecutor";
+import { executeRouter } from "./routerExecutor";
 
 export interface ExecutionContext {
   send: (msg: ServerMessage) => void;
@@ -80,9 +82,55 @@ export async function executeNode(
     }
 
     case "router":
+      return executeRouter(step, ctx);
+
     case "subagent":
-      // Stub — will be implemented in v0.2
-      return null;
+      return executeSubagent(step, ctx);
+
+    case "tool-set": {
+      // Tool Set node: produces an array of tool descriptors based on preset
+      const preset = step.config.preset ?? "coding";
+      const presetTools: Record<string, string[]> = {
+        coding: ["read", "bash", "edit", "write"],
+        readonly: ["read", "grep", "find", "ls"],
+        all: ["read", "bash", "edit", "write", "grep", "find", "ls"],
+        custom: (step.config.customTools ?? "").split(",").map((t: string) => t.trim()).filter(Boolean),
+      };
+      const tools = (presetTools[preset] ?? presetTools.coding).map((t) => ({
+        type: t,
+        cwd: ".",
+      }));
+      return { tools };
+    }
+
+    case "memory": {
+      // Memory node: passes through or filters messages based on strategy
+      const msgsRef = step.inputs["messages"];
+      const upstream = msgsRef ? ctx.nodeOutputs.get(msgsRef.sourceNodeId) : null;
+      const messages = upstream?.[msgsRef?.sourcePortId ?? ""] ?? [];
+      const strategy = step.config.strategy ?? "full-history";
+      const maxMessages = step.config.maxMessages ?? 100;
+
+      let context = Array.isArray(messages) ? messages : [];
+      if (strategy === "sliding-window") {
+        const windowSize = step.config.windowSize ?? 20;
+        context = context.slice(-windowSize);
+      } else if (strategy === "full-history") {
+        context = context.slice(-maxMessages);
+      }
+      // summary strategy would need an LLM call — stub for now
+      return { context };
+    }
+
+    case "protected-path":
+      // Protected Path: returns constraint config for agent middleware
+      return {
+        constraint: {
+          paths: (step.config.paths ?? "").split("\n").filter((p: string) => p.trim()),
+          mode: step.config.mode ?? "block-writes",
+        },
+      };
+
 
     default:
       console.warn(`[gooey-server] Unknown node type: ${step.type}`);

@@ -264,6 +264,108 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       },
     ],
   },
+  // === Protected Path ===
+  {
+    type: "protected-path",
+    label: "Protected Path",
+    category: "safety",
+    icon: "🔒",
+    inputs: [{ id: "agent", label: "Agent", type: "data" }],
+    outputs: [{ id: "constraint", label: "Constraint", type: "config" }],
+    config: [
+      {
+        key: "paths",
+        label: "Protected Paths (one per line)",
+        type: "textarea",
+        default: "/etc\n/usr\n~/.ssh",
+      },
+      {
+        key: "mode",
+        label: "Mode",
+        type: "select",
+        default: "block-writes",
+        options: [
+          { label: "Block Writes", value: "block-writes" },
+          { label: "Block All", value: "block-all" },
+          { label: "Warn Only", value: "warn" },
+        ],
+      },
+    ],
+  },
+
+  // === Tool Set ===
+  {
+    type: "tool-set",
+    label: "Tool Set",
+    category: "core",
+    icon: "🧰",
+    inputs: [],
+    outputs: [{ id: "tools", label: "Tools", type: "tools" }],
+    config: [
+      {
+        key: "preset",
+        label: "Preset",
+        type: "select",
+        default: "coding",
+        options: [
+          { label: "Coding (read/bash/edit/write)", value: "coding" },
+          { label: "Read-Only (read/grep/find/ls)", value: "readonly" },
+          { label: "All Tools", value: "all" },
+          { label: "Custom", value: "custom" },
+        ],
+      },
+      {
+        key: "customTools",
+        label: "Custom Tools (comma-separated)",
+        type: "string",
+        default: "",
+        description: "Only used when preset is Custom",
+      },
+    ],
+  },
+
+  // === Memory / Context ===
+  {
+    type: "memory",
+    label: "Memory",
+    category: "core",
+    icon: "🧠",
+    inputs: [{ id: "messages", label: "Messages In", type: "messages" }],
+    outputs: [{ id: "context", label: "Context", type: "messages" }],
+    config: [
+      {
+        key: "strategy",
+        label: "Strategy",
+        type: "select",
+        default: "full-history",
+        options: [
+          { label: "Full History", value: "full-history" },
+          { label: "Sliding Window", value: "sliding-window" },
+          { label: "Summary", value: "summary" },
+        ],
+      },
+      {
+        key: "maxMessages",
+        label: "Max Messages",
+        type: "number",
+        default: 100,
+      },
+      {
+        key: "windowSize",
+        label: "Window Size",
+        type: "number",
+        default: 20,
+        description: "For sliding-window strategy",
+      },
+      {
+        key: "summarizeAfter",
+        label: "Summarize After",
+        type: "number",
+        default: 50,
+        description: "For summary strategy",
+      },
+    ],
+  },
 ];
 
 // Index by type for fast lookup
