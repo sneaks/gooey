@@ -80,7 +80,10 @@ export function compileGraph(graph: GraphJSON): ExecutionPlan {
  * Validates a graph before execution.
  * Returns an array of error messages (empty = valid).
  */
-export function validateGraph(graph: GraphJSON): string[] {
+export function validateGraph(
+  graph: GraphJSON,
+  nodeDefs?: Record<string, { inputs: { id: string; required?: boolean; label: string }[] }>,
+): string[] {
   const errors: string[] = [];
 
   if (graph.nodes.length === 0) {
@@ -93,6 +96,25 @@ export function validateGraph(graph: GraphJSON): string[] {
   for (const e of graph.edges) {
     if (!nodeIds.has(e.source)) errors.push(`Edge ${e.id}: source node "${e.source}" not found`);
     if (!nodeIds.has(e.target)) errors.push(`Edge ${e.id}: target node "${e.target}" not found`);
+  }
+
+  // Check required ports are connected (if node definitions provided)
+  if (nodeDefs) {
+    // Build set of connected target ports: "nodeId:portId"
+    const connectedInputs = new Set<string>();
+    for (const e of graph.edges) {
+      connectedInputs.add(`${e.target}:${e.targetHandle}`);
+    }
+
+    for (const node of graph.nodes) {
+      const def = nodeDefs[node.type];
+      if (!def) continue;
+      for (const port of def.inputs) {
+        if (port.required && !connectedInputs.has(`${node.id}:${port.id}`)) {
+          errors.push(`${node.type} "${node.id}": required port "${port.label}" is not connected`);
+        }
+      }
+    }
   }
 
   return errors;

@@ -3,6 +3,7 @@ import type { ServerMessage } from "../shared/protocol";
 import { compileGraph, validateGraph } from "../shared/execution/compiler";
 import type { ExecutionPlan } from "../shared/execution/types";
 import { executeNode } from "./nodeExecutors/index";
+import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
 
 export type SendMessage = (msg: ServerMessage) => void;
 
@@ -22,8 +23,8 @@ export class GraphRunner {
   ) {}
 
   async run(): Promise<void> {
-    // Validate
-    const errors = validateGraph(this.graph);
+    // Validate (pass node defs for required-port checks)
+    const errors = validateGraph(this.graph, NODE_DEFS_BY_TYPE);
     if (errors.length > 0) {
       this.send({ type: "error", nodeId: "", message: errors.join("; ") });
       this.send({ type: "done" });

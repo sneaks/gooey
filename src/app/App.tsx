@@ -7,6 +7,8 @@ import { useGraphStore } from "./store";
 import { runMockExecution } from "./mockRunner";
 import { initWebSocket, sendMessage, isConnected, disconnectWebSocket } from "./wsClient";
 import { RESEARCH_AGENT_TEMPLATE } from "../templates/researchAgent";
+import { validateGraph } from "../shared/execution/compiler";
+import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === "true";
 
@@ -32,8 +34,16 @@ function Toolbar() {
 
   const handleRun = () => {
     if (executionState === "running") return;
-    runGraph();
     const graph = saveGraph();
+
+    // Validate before running
+    const errors = validateGraph(graph, NODE_DEFS_BY_TYPE);
+    if (errors.length > 0) {
+      alert("Graph validation errors:\n\n" + errors.join("\n"));
+      return;
+    }
+
+    runGraph();
 
     if (MOCK_MODE) {
       mockRunRef.current = runMockExecution(graph, handleServerMessage);
@@ -52,16 +62,66 @@ function Toolbar() {
     stopGraph();
   };
 
+  const saveToServer = useGraphStore((s) => s.saveToServer);
+  const loadFromServer = useGraphStore((s) => s.loadFromServer);
+  const listServerGraphs = useGraphStore((s) => s.listServerGraphs);
+
   const handleSave = () => {
     saveToLocalStorage();
+    // Also save to server if connected
+    if (!MOCK_MODE && wsStatus === "connected") {
+      const name = prompt("Save graph as:", "my-graph");
+      if (name) saveToServer(name);
+    }
   };
 
-  const handleLoad = () => {
+  const handleLoad = async () => {
+    if (!MOCK_MODE && wsStatus === "connected") {
+      const graphs = await listServerGraphs();
+      if (graphs.length > 0) {
+        const name = prompt(`Load graph:\n${graphs.join("\n")}\n\nEnter name:`);
+        if (name) {
+          const loaded = await loadFromServer(name);
+          if (!loaded) alert("Graph not found on server");
+          return;
+        }
+      }
+    }
+    // Fall back to localStorage
     loadFromLocalStorage();
   };
 
   const handleLoadTemplate = () => {
     loadGraph(RESEARCH_AGENT_TEMPLATE);
+  };
+
+  const handleExport = () => {
+    const json = saveGraph();
+    const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "gooey-graph.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      try {
+        const json = JSON.parse(text);
+        loadGraph(json);
+      } catch {
+        alert("Invalid graph JSON");
+      }
+    };
+    input.click();
   };
 
   const btnStyle: React.CSSProperties = {
@@ -150,6 +210,18 @@ function Toolbar() {
         style={{ ...btnStyle, background: "#1e293b", color: "#94a3b8" }}
       >
         📋 Template
+      </button>
+      <button
+        onClick={handleExport}
+        style={{ ...btnStyle, background: "#1e293b", color: "#94a3b8" }}
+      >
+        ⬇ Export
+      </button>
+      <button
+        onClick={handleImport}
+        style={{ ...btnStyle, background: "#1e293b", color: "#94a3b8" }}
+      >
+        ⬆ Import
       </button>
 
       {/* Status indicator */}
