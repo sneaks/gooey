@@ -16,14 +16,15 @@
       "id": "llm-provider-1",
       "type": "llm-provider",
       "position": {
-        "x": 112,
+        "x": 96,
         "y": -48
       },
       "data": {
-        "provider": "anthropic",
-        "modelId": "claude-sonnet-4-20250514",
+        "provider": "openai-compatible",
+        "modelId": "gemma3:4b",
         "thinkingLevel": "off",
-        "apiKeyEnvVar": "ANTHROPIC_API_KEY"
+        "apiKeyEnvVar": "PLACEHOLDER_API_KEY",
+        "baseURL": "http://192.168.4.173:11434/v1"
       }
     },
     {

@@ -10,7 +10,7 @@ export async function executeLLMProvider(
   step: ExecutionStep,
   _ctx: ExecutionContext,
 ): Promise<Record<string, any>> {
-  const { provider, modelId, thinkingLevel, apiKeyEnvVar } = step.config;
+  const { provider, modelId, thinkingLevel, apiKeyEnvVar, baseURL } = step.config;
 
   // Resolve API key from environment
   const apiKey = apiKeyEnvVar ? process.env[apiKeyEnvVar] : undefined;
@@ -26,6 +26,7 @@ export async function executeLLMProvider(
       modelId: modelId ?? "claude-sonnet-4-20250514",
       thinkingLevel: thinkingLevel ?? "off",
       apiKey, // Stays server-side, never sent to browser
+      baseURL: baseURL ?? "", // For OpenRouter/OpenAI Compatible
     },
   };
 }

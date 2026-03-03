@@ -30,7 +30,7 @@ const COMPAT: Record<WireType, WireType[]> = {
   message: ["message", "data"],
   messages: ["messages", "data"],
   stream: ["stream", "data"],
-  data: ["data"],
+  data: ["data", "message"],
   trigger: ["trigger"],
   event: ["event", "data"],
   boolean: ["boolean", "data"],

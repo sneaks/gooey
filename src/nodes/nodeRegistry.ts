@@ -18,6 +18,8 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
         options: [
           { label: "Anthropic", value: "anthropic" },
           { label: "OpenAI", value: "openai" },
+          { label: "OpenRouter", value: "openrouter" },
+          { label: "OpenAI Compatible", value: "openai-compatible" },
           { label: "Google", value: "google" },
           { label: "xAI", value: "xai" },
           { label: "Groq", value: "groq" },
@@ -26,14 +28,16 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       {
         key: "modelId",
         label: "Model",
-        type: "select",
+        type: "string",
         default: "claude-sonnet-4-20250514",
-        options: [
-          { label: "Claude Sonnet 4", value: "claude-sonnet-4-20250514" },
-          { label: "Claude Opus 4.5", value: "claude-opus-4-5" },
-          { label: "GPT-4o", value: "gpt-4o" },
-          { label: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
-        ],
+        description: "Model ID (e.g., claude-sonnet-4-20250514, gpt-4o, llama-3.1)",
+      },
+      {
+        key: "baseURL",
+        label: "Base URL",
+        type: "string",
+        default: "",
+        description: "For OpenRouter/OpenAI Compatible (e.g., https://openrouter.ai/v1, http://localhost:11434/v1)",
       },
       {
         key: "thinkingLevel",
@@ -52,7 +56,7 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
         label: "API Key Env Var",
         type: "string",
         default: "ANTHROPIC_API_KEY",
-        description: "Environment variable name (resolved server-side)",
+        description: "Leave empty for local LLMs (Ollama, LM Studio, vLLM)",
       },
     ],
   },
