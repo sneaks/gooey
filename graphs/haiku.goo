@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "llm-provider-4",
+      "type": "llm-provider",
+      "position": {
+        "x": 96,
+        "y": -112
+      },
+      "data": {
+        "provider": "openai-compatible",
+        "modelId": "gemma3:4b",
+        "baseURL": "http://192.168.4.173:11434/v1",
+        "thinkingLevel": "off",
+        "apiKeyEnvVar": "ANTHROPIC_API_KEY"
+      }
+    },
+    {
+      "id": "agent-5",
+      "type": "agent",
+      "position": {
+        "x": 448,
+        "y": -48
+      },
+      "data": {
+        "maxTurns": 10,
+        "compactionEnabled": false
+      }
+    },
+    {
+      "id": "prompt-input-6",
+      "type": "prompt-input",
+      "position": {
+        "x": 96,
+        "y": 0
+      },
+      "data": {
+        "prompt": "Provide a haiku inspired by the terminal\n\nYour response should be the haiku only"
+      }
+    },
+    {
+      "id": "output-7",
+      "type": "output",
+      "position": {
+        "x": 688,
+        "y": -128
+      },
+      "data": {
+        "format": "markdown"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "xy-edge__llm-provider-4model-agent-5model",
+      "source": "llm-provider-4",
+      "sourceHandle": "model",
+      "target": "agent-5",
+      "targetHandle": "model"
+    },
+    {
+      "id": "xy-edge__prompt-input-6prompt-agent-5userMessage",
+      "source": "prompt-input-6",
+      "sourceHandle": "prompt",
+      "target": "agent-5",
+      "targetHandle": "userMessage"
+    },
+    {
+      "id": "xy-edge__agent-5response-output-7input",
+      "source": "agent-5",
+      "sourceHandle": "response",
+      "target": "output-7",
+      "targetHandle": "input"
+    }
+  ]
+}

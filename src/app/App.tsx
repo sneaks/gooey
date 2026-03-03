@@ -3,6 +3,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { Canvas } from "../canvas/Canvas";
 import { Sidebar } from "../panels/Sidebar";
 import { Inspector } from "../panels/Inspector";
+import { FileBrowser } from "../panels/FileBrowser";
 import { useGraphStore } from "./store";
 import { runMockExecution } from "./mockRunner";
 import { initWebSocket, sendMessage, isConnected, disconnectWebSocket } from "./wsClient";
@@ -78,29 +79,26 @@ function Toolbar() {
   const loadFromServer = useGraphStore((s) => s.loadFromServer);
   const listServerGraphs = useGraphStore((s) => s.listServerGraphs);
 
+  const [fileBrowserOpen, setFileBrowserOpen] = useState(false);
+  const [fileBrowserMode, setFileBrowserMode] = useState<"load" | "save">("load");
+
   const handleSave = () => {
     saveToLocalStorage();
-    // Also save to server if connected
+    // Open file browser for server save
     if (!MOCK_MODE && wsStatus === "connected") {
-      const name = prompt("Save graph as:", "my-graph");
-      if (name) saveToServer(name);
+      setFileBrowserMode("save");
+      setFileBrowserOpen(true);
     }
   };
 
   const handleLoad = async () => {
     if (!MOCK_MODE && wsStatus === "connected") {
-      const graphs = await listServerGraphs();
-      if (graphs.length > 0) {
-        const name = prompt(`Load graph:\n${graphs.join("\n")}\n\nEnter name:`);
-        if (name) {
-          const loaded = await loadFromServer(name);
-          if (!loaded) alert("Graph not found on server");
-          return;
-        }
-      }
+      setFileBrowserMode("load");
+      setFileBrowserOpen(true);
+    } else {
+      // Fall back to localStorage
+      loadFromLocalStorage();
     }
-    // Fall back to localStorage
-    loadFromLocalStorage();
   };
 
   const handleLoadTemplate = () => {
@@ -281,6 +279,13 @@ function Toolbar() {
           <span style={{ color: "#ef4444" }}>Error</span>
         )}
       </div>
+
+      {/* File Browser Modal */}
+      <FileBrowser
+        isOpen={fileBrowserOpen}
+        onClose={() => setFileBrowserOpen(false)}
+        mode={fileBrowserMode}
+      />
     </div>
   );
 }

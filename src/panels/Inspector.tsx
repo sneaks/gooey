@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGraphStore } from "../app/store";
 import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
 import type { ConfigField } from "../shared/graphTypes";
@@ -111,8 +111,49 @@ export function Inspector() {
   const deleteNode = useGraphStore((s) => s.deleteNode);
   const nodeState = useGraphStore((s) => selectedNodeId ? s.nodeStates[selectedNodeId] : undefined);
 
+  const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [testMessage, setTestMessage] = useState("");
+  const prevNodeId = React.useRef<string | null>(null);
+  if (prevNodeId.current !== selectedNodeId) {
+    prevNodeId.current = selectedNodeId ?? null;
+    if (testStatus !== "idle") {
+      setTestStatus("idle");
+      setTestMessage("");
+    }
+  }
+
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const def = selectedNode ? NODE_DEFS_BY_TYPE[selectedNode.type!] : null;
+
+  const testLLMProvider = async () => {
+    if (!selectedNode) return;
+    const d = selectedNode.data as Record<string, any>;
+    setTestStatus("testing");
+    setTestMessage("");
+    try {
+      const res = await fetch("http://localhost:4242/api/test-llm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: d.provider,
+          modelId: d.modelId,
+          apiKeyEnvVar: d.apiKeyEnvVar,
+          baseURL: d.baseURL,
+        }),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setTestStatus("success");
+        setTestMessage("Connected");
+      } else {
+        setTestStatus("error");
+        setTestMessage(json.error ?? "Unknown error");
+      }
+    } catch (err: any) {
+      setTestStatus("error");
+      setTestMessage(err.message ?? String(err));
+    }
+  };
 
   if (!selectedNode || !def) {
     return (
@@ -276,6 +317,57 @@ export function Inspector() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Connection test for LLM Provider nodes */}
+      {def.type === "llm-provider" && (
+        <div style={{ marginBottom: 16 }}>
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              color: "#64748b",
+              marginBottom: 8,
+            }}
+          >
+            Connection Test
+          </div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <button
+              onClick={testLLMProvider}
+              disabled={testStatus === "testing"}
+              style={{
+                padding: "4px 8px",
+                background: testStatus === "testing" ? "#eab308" : "#1e293b",
+                border: "1px solid #334155",
+                borderRadius: 4,
+                color: "#94a3b8",
+                fontSize: 10,
+                fontWeight: 500,
+                cursor: testStatus === "testing" ? "default" : "pointer",
+                opacity: testStatus === "testing" ? 0.7 : 1,
+              }}
+            >
+              {testStatus === "testing" ? "Testing..." : "Test"}
+            </button>
+            {testStatus !== "idle" && testStatus !== "testing" && (
+              <span
+                style={{
+                  fontSize: 10,
+                  color: testStatus === "success" ? "#22c55e" : "#ef4444",
+                  flex: 1,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                title={testMessage}
+              >
+                {testStatus === "success" ? "✓" : "✗"} {testMessage}
+              </span>
+            )}
+          </div>
         </div>
       )}
 

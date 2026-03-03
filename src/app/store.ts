@@ -65,6 +65,7 @@ interface GraphStore {
   saveToServer: (name: string) => Promise<void>;
   loadFromServer: (name: string) => Promise<boolean>;
   listServerGraphs: () => Promise<string[]>;
+  deleteFromServer: (name: string) => Promise<boolean>;
   exportLocalStorageToFile: () => string | null;
 }
 
@@ -413,6 +414,17 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
       return data.graphs ?? [];
     } catch {
       return [];
+    }
+  },
+
+  deleteFromServer: async (name: string) => {
+    try {
+      const res = await fetch(`http://localhost:4242/api/graphs/${name}`, {
+        method: "DELETE",
+      });
+      return res.ok;
+    } catch {
+      return false;
     }
   },
 
