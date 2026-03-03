@@ -20,6 +20,8 @@ import { HandoffNode } from "./HandoffNode";
 import { RemoteExecNode } from "./RemoteExecNode";
 import { CustomNode } from "./CustomNode";
 import { VariableNode } from "./VariableNode";
+import { HttpRequestNode } from "./HttpRequestNode";
+import { GmailNode } from "./GmailNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -44,4 +46,6 @@ export const nodeTypes = {
   "remote-exec": RemoteExecNode,
   custom: CustomNode,
   variable: VariableNode,
+  "http-request": HttpRequestNode,
+  gmail: GmailNode,
 };

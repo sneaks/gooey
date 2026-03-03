@@ -4,6 +4,7 @@ import { Canvas } from "../canvas/Canvas";
 import { Sidebar } from "../panels/Sidebar";
 import { Inspector } from "../panels/Inspector";
 import { FileBrowser } from "../panels/FileBrowser";
+import { LogsPanel } from "../panels/LogsPanel";
 import { useGraphStore } from "./store";
 import { runMockExecution } from "./mockRunner";
 import { initWebSocket, sendMessage, isConnected, disconnectWebSocket } from "./wsClient";
@@ -25,7 +26,7 @@ import { exportAsPiExtension } from "../shared/exportExtension";
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === "true";
 
-function Toolbar() {
+function Toolbar({ logsOpen, onToggleLogs }: { logsOpen: boolean; onToggleLogs: () => void }) {
   const executionState = useGraphStore((s) => s.executionState);
   const runGraph = useGraphStore((s) => s.runGraph);
   const stopGraph = useGraphStore((s) => s.stopGraph);
@@ -260,6 +261,21 @@ function Toolbar() {
         🔌 Extension
       </button>
 
+      <div style={{ width: 1, height: 20, background: "#334155" }} />
+
+      {/* Logs toggle */}
+      <button
+        onClick={onToggleLogs}
+        style={{
+          ...btnStyle,
+          background: logsOpen ? "#1e293b" : "transparent",
+          color: logsOpen ? "#e2e8f0" : "#475569",
+          borderColor: logsOpen ? "#334155" : "transparent",
+        }}
+      >
+        🪵 Logs
+      </button>
+
       {/* Status indicator */}
       <div style={{ marginLeft: "auto", fontSize: 11, color: "#64748b", display: "flex", alignItems: "center", gap: 8 }}>
         {!MOCK_MODE && (
@@ -290,9 +306,12 @@ function Toolbar() {
   );
 }
 
+const LOGS_HEIGHT = 220;
+
 export function App() {
   const loadFromLocalStorage = useGraphStore((s) => s.loadFromLocalStorage);
   const loadGraph = useGraphStore((s) => s.loadGraph);
+  const [logsOpen, setLogsOpen] = useState(false);
 
   useEffect(() => {
     // Try to load saved graph, fall back to template
@@ -312,11 +331,14 @@ export function App() {
           flexDirection: "column",
         }}
       >
-        <Toolbar />
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-          <Sidebar />
-          <Canvas />
-          <Inspector />
+        <Toolbar logsOpen={logsOpen} onToggleLogs={() => setLogsOpen((o) => !o)} />
+        <div style={{ flex: 1, display: "flex", overflow: "hidden", flexDirection: "column" }}>
+          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            <Sidebar />
+            <Canvas />
+            <Inspector />
+          </div>
+          {logsOpen && <LogsPanel height={LOGS_HEIGHT} />}
         </div>
       </div>
 

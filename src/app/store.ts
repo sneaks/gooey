@@ -23,6 +23,19 @@ export interface NodeRuntimeState {
   gateRequest?: { commandId: string; message: string };
 }
 
+let logIdCounter = 0;
+
+export type LogLevel = "info" | "error" | "tool_call" | "tool_result" | "warn";
+
+export interface LogEntry {
+  id: number;
+  timestamp: number;
+  level: LogLevel;
+  nodeId: string;
+  message: string;
+  detail?: string;
+}
+
 interface GraphStore {
   // React Flow state
   nodes: Node[];
@@ -50,6 +63,11 @@ interface GraphStore {
   runGraph: () => void;
   stopGraph: () => void;
   respondToGate: (commandId: string, approved: boolean) => void;
+
+  // Logs
+  logEntries: LogEntry[];
+  addLogEntry: (entry: Omit<LogEntry, "id" | "timestamp">) => void;
+  clearLogs: () => void;
 
   // Undo/redo
   undo: () => void;
@@ -94,6 +112,7 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   nodeStates: {},
   canUndo: false,
   canRedo: false,
+  logEntries: [],
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
@@ -190,7 +209,21 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
     });
   },
 
+  addLogEntry: (entry) => {
+    const full: LogEntry = {
+      ...entry,
+      id: ++logIdCounter,
+      timestamp: Date.now(),
+    };
+    // Keep at most 500 entries
+    const prev = get().logEntries;
+    set({ logEntries: prev.length >= 500 ? [...prev.slice(-499), full] : [...prev, full] });
+  },
+
+  clearLogs: () => set({ logEntries: [] }),
+
   handleServerMessage: (msg) => {
+    const addLog = get().addLogEntry;
     switch (msg.type) {
       case "node_state":
         set({
@@ -203,6 +236,13 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
             },
           },
         });
+        if (msg.status === "error") {
+          addLog({ level: "error", nodeId: msg.nodeId, message: msg.error ?? "Unknown error" });
+        } else if (msg.status === "running") {
+          addLog({ level: "info", nodeId: msg.nodeId, message: "Started" });
+        } else if (msg.status === "done") {
+          addLog({ level: "info", nodeId: msg.nodeId, message: "Done" });
+        }
         break;
 
       case "stream_token":
@@ -234,11 +274,25 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
             },
           },
         });
+        addLog({ level: "warn", nodeId: msg.nodeId, message: `Gate: ${msg.message}` });
         break;
 
       case "tool_call":
+        addLog({
+          level: "tool_call",
+          nodeId: msg.nodeId,
+          message: `→ ${msg.tool}`,
+          detail: JSON.stringify(msg.input, null, 2),
+        });
+        break;
+
       case "tool_result":
-        // Currently a no-op in Phase 0 — will display in agent node in Phase 1
+        addLog({
+          level: "tool_result",
+          nodeId: msg.nodeId,
+          message: `← ${msg.tool}${msg.isError ? " (error)" : ""}`,
+          detail: typeof msg.output === "string" ? msg.output : JSON.stringify(msg.output, null, 2),
+        });
         break;
 
       case "error":
@@ -253,10 +307,12 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
             },
           },
         });
+        addLog({ level: "error", nodeId: msg.nodeId, message: msg.message });
         break;
 
       case "done":
         set({ executionState: "idle" });
+        addLog({ level: "info", nodeId: "", message: "Run complete" });
         break;
     }
   },

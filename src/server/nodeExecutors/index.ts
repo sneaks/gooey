@@ -5,6 +5,8 @@ import { executeTool } from "./toolExecutor";
 import { executeAgent } from "./agentExecutor";
 import { executeSubagent } from "./subagentExecutor";
 import { executeRouter } from "./routerExecutor";
+import { executeHttpRequest } from "./httpRequestExecutor";
+import { executeGmail } from "./gmailExecutor";
 
 export interface ExecutionContext {
   send: (msg: ServerMessage) => void;
@@ -199,6 +201,12 @@ export async function executeNode(
       }
       return { "item-1": items[0] ?? null, "item-2": items[1] ?? null, "item-3": items[2] ?? null };
     }
+
+    case "http-request":
+      return executeHttpRequest(step, ctx);
+
+    case "gmail":
+      return executeGmail(step, ctx);
 
     case "slack":
       ctx.send({ type: "stream_token", nodeId: step.nodeId, token: `[Slack ${step.config.action ?? "send"} → ${step.config.channel ?? "#general"}]` });

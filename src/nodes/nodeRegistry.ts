@@ -633,6 +633,82 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       { key: "envVar", label: "From Env Var", type: "string", default: "", description: "If set, value is read from this env var (server-side)" },
     ],
   },
+
+  // === HTTP Request ===
+  {
+    type: "http-request",
+    label: "HTTP Request",
+    category: "integration",
+    icon: "🌐",
+    inputs: [
+      { id: "url", label: "URL", type: "data" },
+      { id: "body", label: "Body", type: "data" },
+      { id: "headers", label: "Headers", type: "data" },
+    ],
+    outputs: [
+      { id: "response", label: "Response", type: "data" },
+      { id: "statusCode", label: "Status Code", type: "data" },
+      { id: "ok", label: "OK", type: "boolean" },
+    ],
+    config: [
+      {
+        key: "method",
+        label: "Method",
+        type: "select",
+        default: "GET",
+        options: [
+          { label: "GET", value: "GET" },
+          { label: "POST", value: "POST" },
+          { label: "PUT", value: "PUT" },
+          { label: "PATCH", value: "PATCH" },
+          { label: "DELETE", value: "DELETE" },
+        ],
+      },
+      { key: "url", label: "URL", type: "string", default: "", description: "Overridden by the URL input port if connected" },
+      { key: "headers", label: "Headers (JSON)", type: "json", default: "{}", description: "Merged with the Headers input port" },
+      { key: "body", label: "Body", type: "textarea", default: "", description: "Ignored for GET/HEAD. Overridden by the Body input port if connected." },
+      { key: "timeout", label: "Timeout (s)", type: "number", default: 10 },
+    ],
+  },
+
+  // === Gmail ===
+  {
+    type: "gmail",
+    label: "Gmail",
+    category: "integration",
+    icon: "📧",
+    inputs: [
+      { id: "input", label: "Input", type: "data" },
+    ],
+    outputs: [
+      { id: "result", label: "Result", type: "data" },
+      { id: "trigger", label: "Trigger", type: "trigger" },
+    ],
+    config: [
+      {
+        key: "action",
+        label: "Action",
+        type: "select",
+        default: "list",
+        options: [
+          { label: "List (metadata only)", value: "list" },
+          { label: "Read (full body)", value: "read" },
+          { label: "Send", value: "send" },
+        ],
+      },
+      { key: "query", label: "Query", type: "string", default: "is:unread", description: "Gmail search syntax — for list/read actions" },
+      { key: "maxResults", label: "Max Results", type: "number", default: 10, description: "For list/read actions" },
+      { key: "to", label: "To", type: "string", default: "", description: "Recipient address — for send action" },
+      { key: "subject", label: "Subject", type: "string", default: "", description: "Email subject — for send action" },
+      {
+        key: "credentialsEnvVar",
+        label: "Credentials Env Var",
+        type: "string",
+        default: "GMAIL_CREDENTIALS",
+        description: 'Env var holding JSON: {"client_id":"...","client_secret":"...","refresh_token":"..."}',
+      },
+    ],
+  },
 ];
 
 // Index by type for fast lookup
