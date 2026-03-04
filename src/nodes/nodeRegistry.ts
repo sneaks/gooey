@@ -809,6 +809,73 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       },
     ],
   },
+
+  // === MCP ===
+  {
+    type: "mcp",
+    label: "MCP",
+    category: "integration",
+    icon: "🔌",
+    inputs: [
+      { id: "input", label: "Args", type: "data" },
+      { id: "toolName", label: "Tool (override)", type: "data" },
+    ],
+    outputs: [
+      { id: "result", label: "Result", type: "data" },
+      { id: "tools", label: "Tools", type: "data" },
+      { id: "trigger", label: "Trigger", type: "trigger" },
+    ],
+    config: [
+      {
+        key: "transport",
+        label: "Transport",
+        type: "select",
+        default: "stdio",
+        options: [
+          { label: "stdio (local process)", value: "stdio" },
+          { label: "HTTP / SSE", value: "http" },
+        ],
+      },
+      {
+        key: "command",
+        label: "Command",
+        type: "string",
+        default: "",
+        description: "stdio only — e.g. npx -y @modelcontextprotocol/server-filesystem /tmp",
+      },
+      {
+        key: "url",
+        label: "URL",
+        type: "string",
+        default: "",
+        description: "HTTP only — e.g. http://localhost:3000/sse",
+      },
+      {
+        key: "mode",
+        label: "Mode",
+        type: "select",
+        default: "call",
+        options: [
+          { label: "Call tool", value: "call" },
+          { label: "List tools", value: "list" },
+        ],
+      },
+      {
+        key: "toolName",
+        label: "Tool Name",
+        type: "string",
+        default: "",
+        description: "Tool to call — can be overridden by wiring to the Tool input port",
+      },
+      {
+        key: "argsJson",
+        label: "Arguments (JSON)",
+        type: "string",
+        default: "{}",
+        description: "Tool arguments as JSON — overridden if Args port is wired",
+      },
+    ],
+  },
 ];
 
 // Index by type for fast lookup

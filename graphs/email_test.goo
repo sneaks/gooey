@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "llm-provider-8",
+      "type": "llm-provider",
+      "position": {
+        "x": 416,
+        "y": -352
+      },
+      "data": {
+        "provider": "openai-compatible",
+        "modelId": "gemma3:4b",
+        "baseURL": "http://localhost:11434/v1",
+        "thinkingLevel": "off",
+        "apiKeyEnvVar": "OPENROUTER_API_KEY"
+      }
+    },
+    {
+      "id": "gmail-9",
+      "type": "gmail",
+      "position": {
+        "x": 128,
+        "y": -400
+      },
+      "data": {
+        "action": "list",
+        "query": "",
+        "maxResults": 1,
+        "to": "",
+        "subject": "",
+        "credentialsEnvVar": "GMAIL_CREDENTIALS"
+      }
+    },
+    {
+      "id": "output-10",
+      "type": "output",
+      "position": {
+        "x": 928,
+        "y": -352
+      },
+      "data": {
+        "format": "plain",
+        "_size": "L"
+      }
+    },
+    {
+      "id": "transform-11",
+      "type": "transform",
+      "position": {
+        "x": 48,
+        "y": -224
+      },
+      "data": {
+        "language": "javascript",
+        "code": "return JSON.stringify(data, null, 2);\n"
+      }
+    },
+    {
+      "id": "agent-12",
+      "type": "agent",
+      "position": {
+        "x": 672,
+        "y": -192
+      },
+      "data": {
+        "maxTurns": 10,
+        "compactionEnabled": false
+      }
+    },
+    {
+      "id": "prompt-input-13",
+      "type": "prompt-input",
+      "position": {
+        "x": 416,
+        "y": -112
+      },
+      "data": {
+        "prompt": "You are an email assistant. Summarise the emails below.\nFor each one: sender, subject, one-line summary, and urgency (low/medium/high).\n"
+      }
+    },
+    {
+      "id": "schedule-trigger-17",
+      "type": "schedule-trigger",
+      "position": {
+        "x": -144,
+        "y": -432
+      },
+      "data": {
+        "intervalValue": 1,
+        "intervalUnit": "minutes",
+        "runImmediately": true
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-llm-agent",
+      "source": "llm-provider-8",
+      "sourceHandle": "model",
+      "target": "agent-12",
+      "targetHandle": "model"
+    },
+    {
+      "id": "e-prompt-agent",
+      "source": "prompt-input-13",
+      "sourceHandle": "prompt",
+      "target": "agent-12",
+      "targetHandle": "userMessage"
+    },
+    {
+      "id": "e-transform11-agent",
+      "source": "transform-11",
+      "sourceHandle": "output",
+      "target": "agent-12",
+      "targetHandle": "systemPrompt"
+    },
+    {
+      "id": "e-agent-output",
+      "source": "agent-12",
+      "sourceHandle": "response",
+      "target": "output-10",
+      "targetHandle": "input"
+    },
+    {
+      "id": "e-sched-gmail",
+      "source": "schedule-trigger-17",
+      "sourceHandle": "tickCount",
+      "target": "gmail-9",
+      "targetHandle": "input"
+    },
+    {
+      "id": "e-gmail-transform11",
+      "source": "gmail-9",
+      "sourceHandle": "result",
+      "target": "transform-11",
+      "targetHandle": "input"
+    }
+  ]
+}

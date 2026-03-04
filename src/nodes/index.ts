@@ -25,6 +25,7 @@ import { GmailNode } from "./GmailNode";
 import { ScheduleTriggerNode } from "./ScheduleTriggerNode";
 import { DeactivateScheduleNode } from "./DeactivateScheduleNode";
 import { KVStoreNode } from "./KVStoreNode";
+import { MCPNode } from "./MCPNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -54,4 +55,5 @@ export const nodeTypes = {
   "schedule-trigger": ScheduleTriggerNode,
   "deactivate-schedule": DeactivateScheduleNode,
   "kv-store": KVStoreNode,
+  mcp: MCPNode,
 };

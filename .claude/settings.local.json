@@ -4,7 +4,13 @@
       "Bash(grep:*)",
       "Bash(xargs:*)",
       "Bash(npm install:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git push:*)",
+      "Bash(npm info @modelcontextprotocol/sdk version)"
     ]
   }
 }
