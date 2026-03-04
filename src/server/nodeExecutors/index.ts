@@ -9,6 +9,7 @@ import { executeHttpRequest } from "./httpRequestExecutor";
 import { executeGmail } from "./gmailExecutor";
 import { executeScheduleTrigger } from "./scheduleTriggerExecutor";
 import { executeDeactivateSchedule } from "./deactivateScheduleExecutor";
+import { executeKVStore } from "./kvStoreExecutor";
 
 export interface ExecutionContext {
   send: (msg: ServerMessage) => void;
@@ -209,6 +210,9 @@ export async function executeNode(
 
     case "deactivate-schedule":
       return executeDeactivateSchedule(step, ctx);
+
+    case "kv-store":
+      return executeKVStore(step, ctx);
 
     case "http-request":
       return executeHttpRequest(step, ctx);

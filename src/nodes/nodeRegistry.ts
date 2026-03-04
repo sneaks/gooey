@@ -764,6 +764,51 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
     ],
     config: [],
   },
+
+  // === KV Store ===
+  {
+    type: "kv-store",
+    label: "KV Store",
+    category: "utility",
+    icon: "🗄️",
+    inputs: [
+      { id: "input", label: "Value", type: "data" },
+      { id: "key", label: "Key (override)", type: "data" },
+    ],
+    outputs: [
+      { id: "value", label: "Value", type: "data" },
+      { id: "exists", label: "Exists", type: "data" },
+      { id: "trigger", label: "Trigger", type: "trigger" },
+    ],
+    config: [
+      {
+        key: "action",
+        label: "Action",
+        type: "select",
+        default: "get",
+        options: [
+          { label: "Get", value: "get" },
+          { label: "Set", value: "set" },
+          { label: "Delete", value: "delete" },
+          { label: "Get All", value: "get-all" },
+        ],
+      },
+      {
+        key: "key",
+        label: "Key",
+        type: "string",
+        default: "",
+        description: "Key name — can be overridden by wiring to the Key input port",
+      },
+      {
+        key: "namespace",
+        label: "Namespace",
+        type: "string",
+        default: "default",
+        description: "Isolate keys between graphs using different namespaces",
+      },
+    ],
+  },
 ];
 
 // Index by type for fast lookup

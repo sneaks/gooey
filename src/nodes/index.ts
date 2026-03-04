@@ -24,6 +24,7 @@ import { HttpRequestNode } from "./HttpRequestNode";
 import { GmailNode } from "./GmailNode";
 import { ScheduleTriggerNode } from "./ScheduleTriggerNode";
 import { DeactivateScheduleNode } from "./DeactivateScheduleNode";
+import { KVStoreNode } from "./KVStoreNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -52,4 +53,5 @@ export const nodeTypes = {
   gmail: GmailNode,
   "schedule-trigger": ScheduleTriggerNode,
   "deactivate-schedule": DeactivateScheduleNode,
+  "kv-store": KVStoreNode,
 };
