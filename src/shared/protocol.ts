@@ -4,7 +4,9 @@ import type { GraphJSON } from "./graphTypes";
 export type ClientMessage =
   | { type: "run"; graph: GraphJSON }
   | { type: "stop" }
-  | { type: "gate_response"; commandId: string; approved: boolean };
+  | { type: "gate_response"; commandId: string; approved: boolean }
+  | { type: "schedule"; graph: GraphJSON }
+  | { type: "unschedule" };
 
 // Backend → Browser
 export type ServerMessage =
@@ -14,6 +16,8 @@ export type ServerMessage =
   | { type: "tool_result"; nodeId: string; tool: string; output: any; isError: boolean }
   | { type: "gate_request"; nodeId: string; message: string; commandId: string }
   | { type: "error"; nodeId: string; message: string }
-  | { type: "done" };
+  | { type: "done" }
+  | { type: "schedule_tick"; tickCount: number; nextRun: string }
+  | { type: "schedule_stopped" };
 
 export type NodeStatus = "idle" | "running" | "done" | "error";

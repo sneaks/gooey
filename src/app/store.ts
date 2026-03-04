@@ -52,6 +52,11 @@ interface GraphStore {
   executionState: "idle" | "running" | "paused" | "error";
   nodeStates: Record<string, NodeRuntimeState>;
 
+  // Schedule state
+  scheduleActive: boolean;
+  scheduleTick: number;
+  scheduleNextRun: string | null;
+
   // Actions
   addNode: (type: string, position: { x: number; y: number }) => void;
   updateNodeData: (nodeId: string, data: Record<string, any>) => void;
@@ -113,6 +118,9 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   canUndo: false,
   canRedo: false,
   logEntries: [],
+  scheduleActive: false,
+  scheduleTick: 0,
+  scheduleNextRun: null,
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
@@ -313,6 +321,24 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
       case "done":
         set({ executionState: "idle" });
         addLog({ level: "info", nodeId: "", message: "Run complete" });
+        break;
+
+      case "schedule_tick":
+        set({
+          scheduleActive: true,
+          scheduleTick: msg.tickCount,
+          scheduleNextRun: msg.nextRun,
+        });
+        addLog({
+          level: "info",
+          nodeId: "",
+          message: `⏰ Schedule tick #${msg.tickCount} · next: ${new Date(msg.nextRun).toLocaleTimeString()}`,
+        });
+        break;
+
+      case "schedule_stopped":
+        set({ scheduleActive: false, scheduleNextRun: null });
+        addLog({ level: "info", nodeId: "", message: "⏰ Schedule stopped" });
         break;
     }
   },

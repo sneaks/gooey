@@ -22,6 +22,8 @@ import { CustomNode } from "./CustomNode";
 import { VariableNode } from "./VariableNode";
 import { HttpRequestNode } from "./HttpRequestNode";
 import { GmailNode } from "./GmailNode";
+import { ScheduleTriggerNode } from "./ScheduleTriggerNode";
+import { DeactivateScheduleNode } from "./DeactivateScheduleNode";
 
 export const nodeTypes = {
   "prompt-input": PromptInputNode,
@@ -48,4 +50,6 @@ export const nodeTypes = {
   variable: VariableNode,
   "http-request": HttpRequestNode,
   gmail: GmailNode,
+  "schedule-trigger": ScheduleTriggerNode,
+  "deactivate-schedule": DeactivateScheduleNode,
 };

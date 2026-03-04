@@ -26,6 +26,17 @@ import { exportAsPiExtension } from "../shared/exportExtension";
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === "true";
 
+function formatCountdown(nextRun: string | null): string {
+  if (!nextRun) return "";
+  const ms = new Date(nextRun).getTime() - Date.now();
+  if (ms <= 0) return "now";
+  const s = Math.ceil(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+}
+
 function Toolbar({ logsOpen, onToggleLogs }: { logsOpen: boolean; onToggleLogs: () => void }) {
   const executionState = useGraphStore((s) => s.executionState);
   const runGraph = useGraphStore((s) => s.runGraph);
@@ -35,9 +46,22 @@ function Toolbar({ logsOpen, onToggleLogs }: { logsOpen: boolean; onToggleLogs: 
   const saveToLocalStorage = useGraphStore((s) => s.saveToLocalStorage);
   const loadFromLocalStorage = useGraphStore((s) => s.loadFromLocalStorage);
   const loadGraph = useGraphStore((s) => s.loadGraph);
+  const scheduleActive = useGraphStore((s) => s.scheduleActive);
+  const scheduleNextRun = useGraphStore((s) => s.scheduleNextRun);
+  const scheduleTick = useGraphStore((s) => s.scheduleTick);
 
   const [wsStatus, setWsStatus] = useState<"connected" | "disconnected" | "connecting">("disconnected");
+  const [countdown, setCountdown] = useState("");
   const mockRunRef = useRef<{ cancel: () => void } | null>(null);
+
+  // Live countdown for schedule button label
+  useEffect(() => {
+    if (!scheduleActive || !scheduleNextRun) { setCountdown(""); return; }
+    const tick = () => setCountdown(formatCountdown(scheduleNextRun));
+    tick();
+    const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  }, [scheduleActive, scheduleNextRun]);
 
   // Init WebSocket when not in mock mode
   useEffect(() => {
@@ -74,6 +98,20 @@ function Toolbar({ logsOpen, onToggleLogs }: { logsOpen: boolean; onToggleLogs: 
       sendMessage({ type: "stop" });
     }
     stopGraph();
+  };
+
+  const handleActivate = () => {
+    const graph = saveGraph();
+    const errors = validateGraph(graph, NODE_DEFS_BY_TYPE);
+    if (errors.length > 0) {
+      alert("Graph validation errors:\n\n" + errors.join("\n"));
+      return;
+    }
+    sendMessage({ type: "schedule", graph });
+  };
+
+  const handleDeactivate = () => {
+    sendMessage({ type: "unschedule" });
   };
 
   const saveToServer = useGraphStore((s) => s.saveToServer);
@@ -216,6 +254,44 @@ function Toolbar({ logsOpen, onToggleLogs }: { logsOpen: boolean; onToggleLogs: 
         >
           ⏹ Stop
         </button>
+      )}
+
+      {/* Schedule Activate/Deactivate — only when WS connected */}
+      {!MOCK_MODE && wsStatus === "connected" && (
+        scheduleActive ? (
+          <button
+            onClick={handleDeactivate}
+            title={`Schedule active · ${scheduleTick} run${scheduleTick !== 1 ? "s" : ""}`}
+            style={{
+              ...btnStyle,
+              background: "#1a1a0e",
+              color: "#fbbf24",
+              borderColor: "#92400e",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+            }}
+          >
+            <span style={{ animation: "blink 1.2s step-start infinite" }}>⏰</span>
+            <span>
+              {countdown ? `next in ${countdown}` : "Active"}
+            </span>
+            <span style={{ opacity: 0.6, fontSize: 10 }}>· ⏹</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleActivate}
+            title="Activate scheduled runs"
+            style={{
+              ...btnStyle,
+              background: "transparent",
+              color: "#64748b",
+              borderColor: "transparent",
+            }}
+          >
+            ⏰ Activate
+          </button>
+        )
       )}
 
       <div style={{ width: 1, height: 20, background: "#334155" }} />

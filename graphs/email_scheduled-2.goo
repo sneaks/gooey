@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "llm-provider-8",
+      "type": "llm-provider",
+      "position": {
+        "x": -16,
+        "y": 144
+      },
+      "data": {
+        "provider": "openrouter",
+        "modelId": "anthropic/claude-haiku-4.5",
+        "baseURL": "https://openrouter.ai/api/v1",
+        "thinkingLevel": "off",
+        "apiKeyEnvVar": "OPENROUTER_API_KEY"
+      }
+    },
+    {
+      "id": "gmail-9",
+      "type": "gmail",
+      "position": {
+        "x": 144,
+        "y": -288
+      },
+      "data": {
+        "action": "list",
+        "query": "is:unread",
+        "maxResults": 2,
+        "to": "",
+        "subject": "",
+        "credentialsEnvVar": "GMAIL_CREDENTIALS"
+      }
+    },
+    {
+      "id": "output-10",
+      "type": "output",
+      "position": {
+        "x": 576,
+        "y": -272
+      },
+      "data": {
+        "format": "markdown"
+      }
+    },
+    {
+      "id": "transform-11",
+      "type": "transform",
+      "position": {
+        "x": 112,
+        "y": -48
+      },
+      "data": {
+        "language": "javascript",
+        "code": "return JSON.stringify(data, null, 2);\n\n"
+      }
+    },
+    {
+      "id": "agent-12",
+      "type": "agent",
+      "position": {
+        "x": 400,
+        "y": 160
+      },
+      "data": {
+        "maxTurns": 7,
+        "compactionEnabled": false
+      }
+    },
+    {
+      "id": "prompt-input-13",
+      "type": "prompt-input",
+      "position": {
+        "x": 16,
+        "y": 320
+      },
+      "data": {
+        "prompt": "You are an email assistant. Summarise the emails below.\nFor each one: sender, subject, one-line summary, and urgency (low/medium/high).\n"
+      }
+    },
+    {
+      "id": "schedule-trigger-17",
+      "type": "schedule-trigger",
+      "position": {
+        "x": -96,
+        "y": -368
+      },
+      "data": {
+        "intervalValue": 1,
+        "intervalUnit": "minutes",
+        "runImmediately": true
+      }
+    },
+    {
+      "id": "deactivate-schedule-18",
+      "type": "deactivate-schedule",
+      "position": {
+        "x": 768,
+        "y": -16
+      },
+      "data": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "xy-edge__gmail-9result-transform-11input",
+      "source": "gmail-9",
+      "sourceHandle": "result",
+      "target": "transform-11",
+      "targetHandle": "input"
+    },
+    {
+      "id": "xy-edge__agent-12response-output-10input",
+      "source": "agent-12",
+      "sourceHandle": "response",
+      "target": "output-10",
+      "targetHandle": "input"
+    },
+    {
+      "id": "xy-edge__llm-provider-8model-agent-12model",
+      "source": "llm-provider-8",
+      "sourceHandle": "model",
+      "target": "agent-12",
+      "targetHandle": "model"
+    },
+    {
+      "id": "xy-edge__prompt-input-13prompt-agent-12userMessage",
+      "source": "prompt-input-13",
+      "sourceHandle": "prompt",
+      "target": "agent-12",
+      "targetHandle": "userMessage"
+    },
+    {
+      "id": "xy-edge__transform-11output-agent-12systemPrompt",
+      "source": "transform-11",
+      "sourceHandle": "output",
+      "target": "agent-12",
+      "targetHandle": "systemPrompt"
+    },
+    {
+      "id": "xy-edge__schedule-trigger-17tickCount-gmail-9input",
+      "source": "schedule-trigger-17",
+      "sourceHandle": "tickCount",
+      "target": "gmail-9",
+      "targetHandle": "input"
+    },
+    {
+      "id": "xy-edge__agent-12textOutput-deactivate-schedule-18input",
+      "source": "agent-12",
+      "sourceHandle": "textOutput",
+      "target": "deactivate-schedule-18",
+      "targetHandle": "input"
+    }
+  ]
+}

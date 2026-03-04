@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import { GraphRunner } from "./graphRunner";
 import type { ClientMessage } from "../shared/protocol";
+import { scheduleManager, extractScheduleConfig, toIntervalMs } from "./scheduleManager";
 
 const PORT = parseInt(process.env.GOOEY_PORT ?? "4242", 10);
 const GRAPHS_DIR = path.resolve(process.env.GOOEY_GRAPHS_DIR ?? "./graphs");
@@ -162,6 +163,27 @@ wss.on("connection", (ws: WebSocket) => {
 
       case "gate_response": {
         runner?.resolveGate(msg.commandId, msg.approved);
+        break;
+      }
+
+      case "schedule": {
+        const { intervalValue, intervalUnit, runImmediately } = extractScheduleConfig(msg.graph);
+        const intervalMs = toIntervalMs(intervalValue, intervalUnit);
+        scheduleManager.register(
+          msg.graph,
+          intervalMs,
+          (serverMsg) => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify(serverMsg));
+            }
+          },
+          runImmediately,
+        );
+        break;
+      }
+
+      case "unschedule": {
+        scheduleManager.stop();
         break;
       }
     }

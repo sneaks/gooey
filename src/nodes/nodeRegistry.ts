@@ -709,6 +709,61 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
       },
     ],
   },
+
+  // === Schedule Trigger ===
+  {
+    type: "schedule-trigger",
+    label: "Schedule",
+    category: "io",
+    icon: "⏰",
+    inputs: [],
+    outputs: [
+      { id: "trigger", label: "Trigger", type: "trigger" },
+      { id: "tickCount", label: "Tick #", type: "data" },
+    ],
+    config: [
+      {
+        key: "intervalValue",
+        label: "Every",
+        type: "number",
+        default: 5,
+        description: "How often to run",
+      },
+      {
+        key: "intervalUnit",
+        label: "Unit",
+        type: "select",
+        default: "minutes",
+        options: [
+          { label: "Seconds", value: "seconds" },
+          { label: "Minutes", value: "minutes" },
+          { label: "Hours", value: "hours" },
+        ],
+      },
+      {
+        key: "runImmediately",
+        label: "Run Immediately",
+        type: "boolean",
+        default: true,
+        description: "Fire once right away when activated",
+      },
+    ],
+  },
+
+  // === Deactivate Schedule ===
+  {
+    type: "deactivate-schedule",
+    label: "Deactivate Schedule",
+    category: "io",
+    icon: "⏹",
+    inputs: [
+      { id: "input", label: "Trigger", type: "data" },
+    ],
+    outputs: [
+      { id: "done", label: "Done", type: "data" },
+    ],
+    config: [],
+  },
 ];
 
 // Index by type for fast lookup

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(grep:*)",
       "Bash(xargs:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

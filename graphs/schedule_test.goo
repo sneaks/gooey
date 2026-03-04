@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "llm-provider-8",
+      "type": "llm-provider",
+      "position": {
+        "x": -192,
+        "y": -48
+      },
+      "data": {
+        "provider": "openrouter",
+        "modelId": "anthropic/claude-haiku-4.5",
+        "baseURL": "https://openrouter.ai/api/v1",
+        "thinkingLevel": "off",
+        "apiKeyEnvVar": "OPENROUTER_API_KEY"
+      }
+    },
+    {
+      "id": "output-10",
+      "type": "output",
+      "position": {
+        "x": 560,
+        "y": -16
+      },
+      "data": {
+        "format": "markdown"
+      }
+    },
+    {
+      "id": "agent-12",
+      "type": "agent",
+      "position": {
+        "x": 320,
+        "y": 64
+      },
+      "data": {
+        "maxTurns": 10,
+        "compactionEnabled": false
+      }
+    },
+    {
+      "id": "prompt-input-13",
+      "type": "prompt-input",
+      "position": {
+        "x": -176,
+        "y": 224
+      },
+      "data": {
+        "prompt": "You are an email assistant. Summarise the emails below.\nFor each one: sender, subject, one-line summary, and urgency (low/medium/high).\n"
+      }
+    },
+    {
+      "id": "schedule-trigger-14",
+      "type": "schedule-trigger",
+      "position": {
+        "x": -64,
+        "y": -272
+      },
+      "data": {
+        "intervalValue": 60,
+        "intervalUnit": "seconds",
+        "runImmediately": true
+      }
+    },
+    {
+      "id": "transform-15",
+      "type": "transform",
+      "position": {
+        "x": 176,
+        "y": -192
+      },
+      "data": {
+        "language": "javascript",
+        "code": "// input is available as `data`\nreturn data;"
+      }
+    },
+    {
+      "id": "output-16",
+      "type": "output",
+      "position": {
+        "x": 576,
+        "y": -336
+      },
+      "data": {
+        "format": "markdown"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "xy-edge__agent-12response-output-10input",
+      "source": "agent-12",
+      "sourceHandle": "response",
+      "target": "output-10",
+      "targetHandle": "input"
+    },
+    {
+      "id": "xy-edge__llm-provider-8model-agent-12model",
+      "source": "llm-provider-8",
+      "sourceHandle": "model",
+      "target": "agent-12",
+      "targetHandle": "model"
+    },
+    {
+      "id": "xy-edge__prompt-input-13prompt-agent-12userMessage",
+      "source": "prompt-input-13",
+      "sourceHandle": "prompt",
+      "target": "agent-12",
+      "targetHandle": "userMessage"
+    },
+    {
+      "id": "xy-edge__schedule-trigger-14tickCount-transform-15input",
+      "source": "schedule-trigger-14",
+      "sourceHandle": "tickCount",
+      "target": "transform-15",
+      "targetHandle": "input"
+    }
+  ]
+}

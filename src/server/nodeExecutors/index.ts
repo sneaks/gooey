@@ -7,6 +7,8 @@ import { executeSubagent } from "./subagentExecutor";
 import { executeRouter } from "./routerExecutor";
 import { executeHttpRequest } from "./httpRequestExecutor";
 import { executeGmail } from "./gmailExecutor";
+import { executeScheduleTrigger } from "./scheduleTriggerExecutor";
+import { executeDeactivateSchedule } from "./deactivateScheduleExecutor";
 
 export interface ExecutionContext {
   send: (msg: ServerMessage) => void;
@@ -201,6 +203,12 @@ export async function executeNode(
       }
       return { "item-1": items[0] ?? null, "item-2": items[1] ?? null, "item-3": items[2] ?? null };
     }
+
+    case "schedule-trigger":
+      return executeScheduleTrigger(step, ctx);
+
+    case "deactivate-schedule":
+      return executeDeactivateSchedule(step, ctx);
 
     case "http-request":
       return executeHttpRequest(step, ctx);
