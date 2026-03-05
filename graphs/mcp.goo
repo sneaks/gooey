@@ -1,5 +1,86 @@
 {
   "version": 1,
-  "nodes": [],
-  "edges": []
+  "nodes": [
+    {
+      "id": "mcp-1",
+      "type": "mcp",
+      "position": { "x": 80, "y": 240 },
+      "data": {
+        "transport": "stdio",
+        "command": "/Users/jojo/Documents/_Ed/STFX - LLMs for IT Professionals/X_Capstone/.venv/bin/python -m mcp_server.server",
+        "url": "",
+        "mode": "call",
+        "toolName": "get_all_instruments",
+        "argsJson": "{}",
+        "envJson": "{\"PYTHONPATH\": \"/Users/jojo/Documents/_Ed/STFX - LLMs for IT Professionals/X_Capstone\", \"GOFREE_URL\": \"ws://127.0.0.1:2053\"}"
+      }
+    },
+    {
+      "id": "llm-provider-2",
+      "type": "llm-provider",
+      "position": { "x": 80, "y": 80 },
+      "data": {
+        "provider": "openai-compatible",
+        "modelId": "gemma3:4b",
+        "baseURL": "http://localhost:11434/v1",
+        "thinkingLevel": "off",
+        "apiKeyEnvVar": "ANTHROPIC_API_KEY"
+      }
+    },
+    {
+      "id": "agent-3",
+      "type": "agent",
+      "position": { "x": 400, "y": 192 },
+      "data": {
+        "maxTurns": 3,
+        "compactionEnabled": false
+      }
+    },
+    {
+      "id": "prompt-input-4",
+      "type": "prompt-input",
+      "position": { "x": 80, "y": 432 },
+      "data": {
+        "prompt": "What is the current sailing situation? Summarize conditions and give any recommendations."
+      }
+    },
+    {
+      "id": "output-5",
+      "type": "output",
+      "position": { "x": 680, "y": 192 },
+      "data": {
+        "format": "markdown"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-llm-agent",
+      "source": "llm-provider-2",
+      "sourceHandle": "model",
+      "target": "agent-3",
+      "targetHandle": "model"
+    },
+    {
+      "id": "e-mcp-system",
+      "source": "mcp-1",
+      "sourceHandle": "result",
+      "target": "agent-3",
+      "targetHandle": "systemPrompt"
+    },
+    {
+      "id": "e-prompt-agent",
+      "source": "prompt-input-4",
+      "sourceHandle": "prompt",
+      "target": "agent-3",
+      "targetHandle": "userMessage"
+    },
+    {
+      "id": "e-agent-output",
+      "source": "agent-3",
+      "sourceHandle": "response",
+      "target": "output-5",
+      "targetHandle": "input"
+    }
+  ]
 }

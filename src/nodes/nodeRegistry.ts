@@ -874,6 +874,13 @@ export const NODE_DEFINITIONS: NodeDefinition[] = [
         default: "{}",
         description: "Tool arguments as JSON — overridden if Args port is wired",
       },
+      {
+        key: "envJson",
+        label: "Env Vars (JSON)",
+        type: "string",
+        default: "{}",
+        description: 'stdio only — extra env vars e.g. {"PYTHONPATH":"/my/path","API_KEY":"..."}',
+      },
     ],
   },
 ];

@@ -14,6 +14,7 @@ export async function executeMCP(
   const mode        = (step.config.mode      as string) ?? "call";
   const configTool  = (step.config.toolName  as string) ?? "";
   const configArgs  = (step.config.argsJson  as string) ?? "{}";
+  const configEnv   = (step.config.envJson   as string) ?? "{}";
 
   // Dynamic overrides from input ports
   const toolInput = step.inputs["toolName"];
@@ -38,9 +39,12 @@ export async function executeMCP(
       throw new Error("MCP stdio: command is required");
     }
     const parts = command.trim().split(/\s+/);
+    let envVars: Record<string, string> = {};
+    try { envVars = JSON.parse(configEnv || "{}"); } catch { envVars = {}; }
     clientTransport = new StdioClientTransport({
       command: parts[0],
       args: parts.slice(1),
+      env: Object.keys(envVars).length > 0 ? { ...process.env as Record<string, string>, ...envVars } : undefined,
     });
   } else {
     if (!url.trim()) {

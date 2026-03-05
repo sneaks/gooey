@@ -3,6 +3,7 @@ import { useGraphStore } from "../app/store";
 import { NODE_DEFS_BY_TYPE } from "../nodes/nodeRegistry";
 import type { ConfigField } from "../shared/graphTypes";
 import { CATEGORY_COLORS } from "../app/theme";
+import { loadPresets, savePreset, deletePreset } from "../app/llmPresets";
 
 function ConfigFieldEditor({
   field,
@@ -113,6 +114,8 @@ export function Inspector() {
 
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
   const [testMessage, setTestMessage] = useState("");
+  const [presets, setPresets] = useState(() => loadPresets());
+  const [selectedPreset, setSelectedPreset] = useState("");
   const prevNodeId = React.useRef<string | null>(null);
   if (prevNodeId.current !== selectedNodeId) {
     prevNodeId.current = selectedNodeId ?? null;
@@ -267,6 +270,97 @@ export function Inspector() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* LLM Presets */}
+      {def.type === "llm-provider" && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{
+            fontSize: 10, fontWeight: 600, textTransform: "uppercase",
+            color: "#64748b", marginBottom: 8,
+          }}>
+            Presets
+          </div>
+          <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
+            <select
+              value={selectedPreset}
+              onChange={(e) => setSelectedPreset(e.target.value)}
+              style={{
+                flex: 1, background: "#0f172a", color: "#e2e8f0",
+                border: "1px solid #334155", borderRadius: 4,
+                padding: "4px 6px", fontSize: 11, fontFamily: "inherit",
+              }}
+            >
+              <option value="">— select preset —</option>
+              {presets.map((p) => (
+                <option key={p.name} value={p.name}>{p.name}</option>
+              ))}
+            </select>
+            <button
+              disabled={!selectedPreset}
+              onClick={() => {
+                const p = presets.find((x) => x.name === selectedPreset);
+                if (!p) return;
+                updateNodeData(selectedNode.id, {
+                  provider: p.provider, modelId: p.modelId,
+                  baseURL: p.baseURL, thinkingLevel: p.thinkingLevel,
+                  apiKeyEnvVar: p.apiKeyEnvVar,
+                });
+              }}
+              style={{
+                padding: "4px 8px", background: "#1e293b",
+                border: "1px solid #334155", borderRadius: 4,
+                color: selectedPreset ? "#60a5fa" : "#475569",
+                fontSize: 10, cursor: selectedPreset ? "pointer" : "default",
+              }}
+            >
+              Load
+            </button>
+            <button
+              disabled={!selectedPreset}
+              onClick={() => {
+                if (!selectedPreset) return;
+                deletePreset(selectedPreset);
+                const updated = loadPresets();
+                setPresets(updated);
+                setSelectedPreset("");
+              }}
+              style={{
+                padding: "4px 8px", background: "#1e293b",
+                border: "1px solid #334155", borderRadius: 4,
+                color: selectedPreset ? "#f87171" : "#475569",
+                fontSize: 10, cursor: selectedPreset ? "pointer" : "default",
+              }}
+            >
+              Del
+            </button>
+          </div>
+          <button
+            onClick={() => {
+              const name = window.prompt("Preset name:", data.modelId as string ?? "");
+              if (!name?.trim()) return;
+              const preset = {
+                name: name.trim(),
+                provider: (data.provider as string) ?? "",
+                modelId: (data.modelId as string) ?? "",
+                baseURL: (data.baseURL as string) ?? "",
+                thinkingLevel: (data.thinkingLevel as string) ?? "off",
+                apiKeyEnvVar: (data.apiKeyEnvVar as string) ?? "",
+              };
+              savePreset(preset);
+              const updated = loadPresets();
+              setPresets(updated);
+              setSelectedPreset(name.trim());
+            }}
+            style={{
+              width: "100%", padding: "4px 8px", background: "#0c1a0c",
+              border: "1px solid #15803d", borderRadius: 4,
+              color: "#86efac", fontSize: 10, cursor: "pointer",
+            }}
+          >
+            + Save current as preset
+          </button>
         </div>
       )}
 
